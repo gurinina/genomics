@@ -1,0 +1,446 @@
+# NGS Pipeline: Saccharomyces cerevisiae samples
+
+```{r setup, include = FALSE}
+
+library(knitr)
+
+knitr::opts_chunk$set(engine.opts = list(zsh = '/bin/zsh'))
+
+```
+
+This is just a reiteration of the files you should have already downloaded. So hopefully you have your files already in your FASTQ directory. So let's skip this part.
+
+We are going to walk steps of a Next Generation Sequencing pipeline using samples from Saccharomyces cerevisiae because the files are nice and small.  Navigate to your FASTQ directory:
+
+```{zsh, engine.opts="-i"}
+pwd
+cd ~
+pwd
+cd ~/Documents/RProjects/genomics/RNA-genomics/FASTQ
+
+
+```
+
+
+in your terminal.
+
+For our examples we will focus on RNA-seq as it is the most manageable computationally as opposed to methylation, Chip-chip and DNA variant analysis. Its also, probably for that reason, one of the more frequently used technologies in research, likely for this reasons.
+
+The samples can be downloaded from the ENA:
+The [European Nucleotide Archive (EMBL-EBI)](http://www.ebi.ac.uk/ena>)
+
+For most reads presented by ENA, there are three kinds of file available:
+
+Submitted files are identical to those submitted by the user
+1. ENA submitted files are available in the ‘run’ directory
+2. FASTQ files are archive-generated files generated according to a standardised format (learn more about this format)
+3. SRA files are in a format designed to work with NCBI’s SRA Toolkit
+
+Each of the three file types has its own directory on the FTP server. A folder exists for every run, which is named with the accession of the run, e.g. files for run ERR164407 are in a directory named ERR164407. These run accession directories are organised into parent directories named with their first 6 characters. For ERR164407 this is ‘ERR164’. This structure is repeated across all three file types, e.g.
+
+ftp://ftp.sra.ebi.ac.uk/vol1/<file-type>/ERR164/ERR164407
+
+It follows that the ftp addresses for our files are as listed below. We can download the files using the curl command. Options: -L, follows redirects, -O, write the output to a file named as the remote file, -R, time the download. First navigate to the FASTQ directory and then type:
+```{zsh, eval=FALSE, engine="sh"}
+
+cd ~/Documents/RProjects/genomics/RNA-genomics/FASTQ
+
+curl -L -R -O ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458493/ERR458493.fastq.gz
+curl -L -R -O ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458494/ERR458494.fastq.gz
+curl -L -R -O ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458495/ERR458495.fastq.gz
+curl -L -R -O ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458500/ERR458500.fastq.gz
+curl -L -R -O ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458501/ERR458501.fastq.gz
+curl -L -R -O ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458502/ERR458502.fastq.gz
+
+```
+
+If you are on a PC, you need to use the wget command. For wget it would be, e.g.:
+
+```{zsh, eval=FALSE, engine="sh"}
+
+cd ~/Documents/RProjects/genomics/RNA-genomics/FASTQ
+wget ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458493/ERR458493.fastq.gz
+wget ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458494/ERR458494.fastq.gz
+wget ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458495/ERR458495.fastq.gz
+wget ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458500/ERR458500.fastq.gz
+wget ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458501/ERR458501.fastq.gz
+wget ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458502/ERR458502.fastq.gz
+ ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458493/ERR458493.fastq.gz
+wget ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458494/ERR458494.fastq.gz
+wget ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458495/ERR458495.fastq.gz
+wget ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458500/ERR458500.fastq.gz
+wget ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458501/ERR458501.fastq.gz
+wget ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458502/ERR458502.fastq.gz
+
+
+```
+
+These files take about 5' to download.
+
+The two other big files that you have are, first the DNA sequence, and second the GTF file, which is a file describing genomic features. You can get these from the ensembl database, which is the go to database for annotated genomes.
+
+**macOS**
+```{zsh, eval=FALSE, engine="sh"}
+
+mkdir -p ~/Documents/RProjects/genomics/RNA-genomics/FASTQ/r64
+cd ~/Documents/RProjects/genomics/RNA-genomics/FASTQ/r64
+
+curl -L -R -O ftp://ftp.ensembl.org/pub/release-96/fasta/saccharomyces_cerevisiae/dna/Saccharomyces_cerevisiae.R64-1-1.dna.toplevel.fa.gz
+
+curl -L -R -O ftp://ftp.ensembl.org/pub/release-96/gtf/saccharomyces_cerevisiae/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz
+
+
+```
+
+**Windows**
+```{zsh, eval=FALSE, engine="sh"}
+
+mkdir -p ~/Documents/RProjects/genomics/RNA-genomics/FASTQ/r64
+cd ~/Documents/RProjects/genomics/RNA-genomics/FASTQ/r64
+
+wget ftp://ftp.ensembl.org/pub/release-96/fasta/saccharomyces_cerevisiae/dna/Saccharomyces_cerevisiae.R64-1-1.dna.toplevel.fa.gz
+
+wget ftp://ftp.ensembl.org/pub/release-96/gtf/saccharomyces_cerevisiae/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz
+
+
+```
+## Fastq files
+
+We've talked about and looked at fastq files a little bit, but let's look at them here in there raw format. First we have to unzip one. 
+
+To unzip you use gunzip and you need the -c to leave the gz file behind:
+```{zsh, engine.opts="-i"}
+
+cd ~/Documents/RProjects/genomics/RNA-genomics
+
+gunzip -c FASTQ/ERR458493.fastq.gz > FASTQ/ERR458493.fastq
+head -n 8 FASTQ/ERR458493.fastq
+
+```
+First line: A sequence identifier with information about the sequencing run and the cluster. The exact contents of this line vary by based on the BCL to FASTQ conversion software used.
+
+Second line: The sequence (the base calls; A, C, T, G and N).
+
+Third line: A separator, which is simply a plus (+) sign.
+
+Forth line: The base call quality scores. These are Phred +33 encoded, using ASCII characters to represent the numerical quality scores.
+
+We can count the number of lines
+```{zsh, engine.opts="-i"}
+
+cd ~/Documents/RProjects/genomics/RNA-genomics
+
+ls -lh
+expr $(cat FASTQ/ERR458493.fastq | wc -l) / 4
+
+```
+
+Quality control with [fastqc](http://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
+
+Use fastqc to check the quality of our fastq files, let's just look at one quickly since we've already looked at one in detail:
+```{zsh, engine.opts="-i"}
+
+cd ~/Documents/RProjects/genomics/RNA-genomics
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+fastqc FASTQ/ERR458493.fastq.gz -t 4 -o FASTQC
+
+```
+
+We've already discussed fastqc files so let's have a look at them.
+
+
+Adapter sequences:
+if the data are used for variant analyses, genome annotation or genome or transcriptome assembly purposes, we recommend read trimming, including both, adapter and quality trimming.
+
+•	Illumina Universal Adapter—AGATCGGAAGAG
+•	Illumina Small RNA 3' Adapter—TGGAATTCTCGG
+•	Illumina Small RNA 5' Adapter—GATCGTCGGACT
+•	Nextera Transposase Sequence—CTGTCTCTTATA
+
+Should I trim adapters from my Illumina reads?
+This depends on the objective of your experiments.
+In case you are sequencing for counting applications like differential gene expression (DGE) RNA-seq analysis, ChIP-seq, ATAC-seq, read trimming is generally not required anymore when using modern aligners.  For such studies local aligners or pseudo-aligners should be used. Modern “local aligners” like STAR, BWA-MEM, HISAT2, will “soft-clip” non-matching sequences. Pseudo-aligners like Kallisto or Salmon will also not have any problem with reads containing adapter sequences.However, if the data are used for variant analyses, genome annotation or genome or transcriptome assembly purposes, we recommend read trimming, including both, adapter and quality trimming.
+
+We will therefore skip trimming our reads and we will use Subread to align our reads. 
+
+Aligning is just a simple command in the terminal. First we need to build an index using the reference fasta DNA sequence. Why do we need an index? Genomes can be very large. A genome index allows the aligner to rapidly look up candidate alignment locations for each read rather than conduct an exhaustive search each time. 
+
+Most aligners need to create their own indexes, so here we will use the subread-buildindex command module to make an index file for the yeast genome. It will create a set of files, these files together comprise the index. The commands to generate the index looks like this:
+
+
+
+Usage:
+
+## ./subread-buildindex [options] -o <basename> {FASTA[.gz] file1}\
+      [FASTA[.gz] file2] ...
+
+Required arguments:
+
+    -o <basename>   base name of the index to be created
+
+Optional arguments:
+
+    -F              build a full index for the reference genome. 16bp subreads
+                    will be extracted from every position of the reference
+                    genome. Size of the index is typically 3 times the size of
+                    index built from using the default setting.
+
+    -B              create one block of index. The built index will not be split
+                    into multiple pieces. This makes the largest amount of
+                    memory be requested when running alignments, but it enables
+                    the maximum mapping speed to be achieved. This option
+                    overrides -M when it is provided as well.
+
+    -M <int>        size of requested memory(RAM) in megabytes, 8000 by default.
+
+    -f <int>        specify the threshold for removing uninformative subreads
+                    (highly repetitive 16mers in the reference). 100 by default.
+
+    -c              build a color-space index.
+
+    -v              output version of the program.
+
+For more information about these arguments, please refer to the User Manual.
+
+Next, we want to build an index from our reference fasta file:
+
+```{zsh, eval=FALSE, engine="sh"}
+
+cd ~/Documents/RProjects/genomics/RNA-genomics/FASTQ
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+
+subread-buildindex -o r64/r64bread.index r64/Saccharomyces_cerevisiae.R64-1-1.dna.toplevel.fa.gz
+
+
+```
+
+
+
+Which will create a set of files with the prefix r64bread.index (R64 is the yeast sequence version) that together comprise the index.
+
+Now we are ready to do the alignment.
+
+If we type subread-align into the terminal we get all the options:
+
+Usage:
+
+## ./subread-align [options] -i <index_name> -r <input> -t <type> -o <output>
+
+## Mandatory arguments:
+    
+  -i <string>       Base name of the index.
+
+  -r <string>       Name of an input read file. If paired-end, this should be
+                    the first read file (typically containing "R1"in the file
+                    name) and the second should be provided via "-R".
+                    Acceptable formats include gzipped FASTQ, FASTQ, gzipped
+                    FASTA and FASTA.
+                    These formats are identified automatically.
+    
+  -t <int>          Type of input sequencing data. Its values include
+                      0: RNA-seq data
+                      1: genomic DNA-seq data.
+    
+## Optional arguments:
+## input reads and output
+    
+  -o <string>       Name of an output file. By default, the output is in BAM
+                    format. Omitting this option makes the output be written to
+                    STDOUT.
+
+  -R <string>       Name of the second read file in paired-end data (typically
+                    containing "R2" the file name).
+
+  --SAMinput        Input reads are in SAM format.
+
+  --BAMinput        Input reads are in BAM format.
+
+  --SAMoutput       Save mapping results in SAM format.
+
+## Phred offset
+
+  -P <3:6>          Offset value added to the Phred quality score of each read
+                    base. '3' for phred+33 and '6' for phred+64. '3' by default.
+
+## thresholds for mapping
+
+  -n <int>          Number of selected subreads, 10 by default.
+
+  -m <int>          Consensus threshold for reporting a hit (minimal number of
+                    subreads that map in consensus) . If paired-end, this gives
+                    the consensus threshold for the anchor read (anchor read
+                    receives more votes than the other read in the same pair).
+                    3 by default
+
+  -p <int>          Consensus threshold for the non- anchor read in a pair. 1 by
+                    default.
+
+  -M <int>          Maximum number of mis-matched bases allowed in each reported
+                    alignment. 3 by default. Mis-matched bases found in soft-
+                    clipped bases are not counted.
+
+## unique mapping and multi-mapping
+
+  --multiMapping    Report multi-mapping reads in addition to uniquely mapped
+                    reads. Use "-B" to set the maximum number of equally-best
+                    alignments to be reported.
+
+  -B <int>          Maximum number of equally-best alignments to be reported for
+                    a multi-mapping read. Equally-best alignments have the same
+                    number of mis-matched bases. 1 by default.
+
+## indel detection
+
+  -I <int>          Maximum length (in bp) of indels that can be detected. 5 by
+                    default. Indels of up to 200bp long can be detected.
+
+  --complexIndels   Detect multiple short indels that are in close proximity
+                    (they can be as close as 1bp apart from each other).
+
+## read trimming
+
+  --trim5 <int>     Trim off <int> number of bases from 5' end of each read. 0
+                    by default.
+
+  --trim3 <int>     Trim off <int> number of bases from 3' end of each read. 0
+                    by default.
+
+## distance and orientation of paired end reads
+
+  -d <int>          Minimum fragment/insert length, 50bp by default.
+
+  -D <int>          Maximum fragment/insert length, 600bp by default.
+
+  -S <ff:fr:rf>     Orientation of first and second reads, 'fr' by default (
+                    forward/reverse).
+
+## number of CPU threads
+
+  -T <int>          Number of CPU threads used, 1 by default.
+
+## read group
+
+  --rg-id <string>  Add read group ID to the output.
+
+  --rg <string>     Add <tag:value> to the read group (RG) header in the output.
+
+## read order
+
+  --keepReadOrder   Keep order of reads in BAM output the same as that in the
+                    input file. Reads from the same pair are always placed next
+                    to each other no matter this option is specified or not.
+
+  --sortReadsByCoordinates Output location-sorted reads. This option is
+                    applicable for BAM output only. A BAI index file is also
+                    generated for each BAM file so the BAM files can be directly
+                    loaded into a genome browser.
+
+## color space reads
+
+  -b                Convert color-space read bases to base-space read bases in
+                    the mapping output. Note that read mapping is performed at
+                    color-space.
+
+## dynamic programming
+
+  --DPGapOpen <int> Penalty for gap opening in short indel detection. -1 by
+                    default.
+
+  --DPGapExt <int>  Penalty for gap extension in short indel detection. 0 by
+                    default.
+
+  --DPMismatch <int> Penalty for mismatches in short indel detection. 0 by
+                    default.
+
+  --DPMatch <int>   Score for matched bases in short indel detection. 2 by
+                    default.
+
+## detect structural variants
+
+  --sv              Detect structural variants (eg. long indel, inversion,
+                    duplication and translocation) and report breakpoints. Refer
+                    to Users Guide for breakpoint reporting.
+
+## gene annotation
+
+  -a                Name of an annotation file (gzipped file is accepted).
+                    GTF/GFF format by default. See -F option for more format
+                    information.
+
+  -F                Specify format of the provided annotation file. Acceptable
+                    formats include 'GTF' (or compatible GFF format) and
+                    'SAF'. 'GTF' by default. For SAF format, please refer to
+                    Users Guide.
+
+  -A                Provide a chromosome name alias file to match chr names in
+                    annotation with those in the reads. This should be a two-
+                    column comma-delimited text file. Its first column should
+                    include chr names in the annotation and its second column
+                    should include chr names in the index. Chr names are case
+                    sensitive. No column header should be included in the
+                    file.
+
+  --gtfFeature <string>  Specify feature type in GTF annotation. 'exon'
+                    by default. Features used for read counting will be 
+                    extracted from annotation using the provided value.
+
+  --gtfAttr <string>     Specify attribute type in GTF annotation. 'gene_id'
+                    by default. Meta-features used for read counting will be 
+                    extracted from annotation using the provided value.
+
+## others
+
+  -v                Output version of the program.
+
+Refer to Users Manual for detailed description to the arguments.
+
+The alignment command is as follows:
+
+```{zsh, eval=FALSE, engine="sh"}
+
+cd ~/Documents/RProjects/genomics/RNA-genomics/FASTQ
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+
+subread-align --sortReadsByCoordinates -a r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -B 3 -T 16 -i r64/r64bread.index -t 0 -r ERR458493.fastq.gz -o ../BAM/res458493.bam &> ../BAM/R493.log
+
+```
+
+
+
+Finally, to create the count matrix we use featureCounts. The command is the following:
+
+```{zsh, eval=FALSE, engine="sh"}
+
+cd ~/Documents/RProjects/genomics/RNA-genomics/FASTQ
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+
+featureCounts -O -t gene -g gene_id -a r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -o ../counts.txt ../BAM/*.bam
+
+```
+
+
+
+We can run all of these commands by creating a shell script. You should find this script in your FASTQ directory called "subreadMapping.sh". Let's have a look at it. To run this 'shell script' you will need to open your terminal. Navigate to the FASTQ directory by typing cd FASTQ. You need to change permissions on your computer so that you can run a shell script by typing: 'chmod 777 subreadMapping.sh' (without the quotes) at the terminal prompt. Then type './subreadMapping.sh' (without the quotes) at the prompt after activating conda rnaseq. This will run fastqc, the indexing, the alignment, and multiqc. Then you're done! A file called 'counts.txt' should appear in your FASTQ directory.
+
+Let's try running it now. 
+
+```{zsh, eval=FALSE, engine="sh"}
+
+cd ~/Documents/RProjects/genomics/RNA-genomics/FASTQ
+
+
+chmod 777 subreadMapping.sh
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+
+sh subreadMapping.sh
+
+```
+
+
+Now let's go look at our counts.summary file 
+

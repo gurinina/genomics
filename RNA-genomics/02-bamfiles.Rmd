@@ -1,0 +1,576 @@
+# Learning the BAM format
+
+```{r setup, include = FALSE}
+
+knitr::opts_chunk$set(engine.opts = list(zsh = '/bin/zsh'))
+
+```
+
+## Introduction
+
+SAMtools provides various (sub)tools for manipulating alignments in the SAM/BAM format.
+The SAM (Sequence Alignment/Map) format (BAM is just the binary form of SAM) is currently the *de facto* standard for storing large nucleotide sequence alignments.
+If you are working with high-throughput sequencing data, at some point you will probably have to deal with SAM/BAM files, so familiarise yourself with them!
+For the latest information on SAMtools, please refer to the [release notes](https://github.com/samtools/samtools/releases).
+
+## Installing SAMtools
+
+**Note: for this code to run with conda samtools, you have to activate conda in every chunk. So the better way to run it would be to copy and paste all of the chunks into your terminal**
+
+```{zsh, eval=FALSE, engine="sh"}
+
+env /usr/bin/arch -x86_64 /bin/zsh --login 
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+
+```
+
+If you have have installed samtools with homebrew (like I have) that is not necessary.
+
+
+## Basic usage
+
+If you run `samtools` on the terminal without any parameters or with `--help`, all the available utilities are listed:Introduction to RNA-seq
+
+Visualizing and counting of the alignments
+
+## The SAM/BAM format
+
+SAM files, are tab-delimited text files that contain information for each individual read and its alignment to the genome.
+
+The compressed binary version of SAM is called a BAM file.
+We use this version to reduce size and to allow for indexing, which enables efficient random access of the data contained within the file.
+
+What's in a SAM/BAM file
+
+A BAM file is just a compressed SAM file. The file begins with a header, which is optional.The header is used to describe source of data, reference sequence, method of alignment, etc., this will change depending on the aligner being used. Following the header is the alignment section. Each line that follows corresponds to alignment information for a single read. Each alignment line has 11 mandatory fields for essential mapping information and a variable number of other fields for aligner specific information. An example entry from a SAM file is displayed below with the different fields highlighted.
+
+![Figure 1.](figures/sam_bam_1.png)
+![Figure 2.](figures/sam_bam3.png)
+
+Additionally tags (or attribute) can be added to each of of the lines. These tags give some additional information on the alignment. The number and type of tags varies between different alignment tools and the settings within these tools. The ‘CIGAR’ (Compact Idiosyncratic Gapped Alignment Report) string is how the SAM/BAM format represents spliced alignments. Understanding the CIGAR string will help you understand how your query sequence aligns to the reference genome. For example, the position stored is the left most coordinate of the alignment. To get to the right coordinate, you have to parse the CIGAR string.
+
+To start of we'll have a look at how to use samtools to have a peak at the the contents of the bam files.
+
+**SAMtools commands**
+
+SAMtools provides the following commands, each invoked as "samtools some_command".
+
+view 
+The view command filters SAM or BAM formatted data.
+Using options and arguments it understands what data to select (possibly all of it) and passes only that data through.
+Input is usually a sam or bam file specified as an argument, but could be sam or bam data piped from any other command.
+Possible uses include extracting a subset of data into a new file, converting between BAM and SAM formats, and just looking at the raw file contents.
+The order of extracted reads is preserved.
+
+As these file are binary you can not simply use:
+
+head aln.bam
+
+This will give an unreadable result.
+SAMtools can help us to make the content readable.
+
+Let's retrieve a bamfile to work with:
+```{zsh, engine.opts="-i"}
+
+cd RNA-genomics/
+
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+
+chmod 777 BAM/ERR458493.bam
+
+cat BAM/ERR458493.bam > aln.bam
+
+
+```
+
+
+```{zsh, eval=FALSE, engine="sh"}
+
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+samtools view aln.bam | head
+
+```
+
+## Sorting
+
+The sort command sorts a BAM file based on its position in the reference, as determined by its alignment.
+
+Many downstream tools require sorted BAM files and since they are slightly more compact than unsorted BAM files, you should always sorted BAM files.
+
+You can directly generate a sorted BAM file from a SAM file where -o defines the name of the output file (also a BAM file).
+
+The default for samtools sort is sorting by position.
+
+There are more sorting possibilities to be found with samtools sort --help.
+
+```{zsh, engine.opts="-i"}
+
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+samtools sort aln.bam -o sorted.bam
+
+```
+
+Only the input file name needs to be specified, based on this name a .bai (BAM index) is produced.
+
+```{zsh, engine.opts="-i"}
+
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+ls -lh aln.bam
+ls -lh sorted.bam
+samtools view aln.bam | head -n 1
+samtools view sorted.bam | head -n 1
+
+```
+
+You should use use additional threads (if they are available) to speed up sorting; to use four threads, use `-@ 4`.
+
+Time taken using one thread (default).
+
+```{zsh, engine.opts="-i"}
+
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+time samtools sort aln.bam -o sorted.bam
+
+```
+
+Time taken using four threads.
+
+```{zsh, engine.opts="-i"}
+
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+time samtools sort -@ 4 aln.bam -o sorted.bam
+
+```
+
+Many of the SAMtools subtools can use additional threads, so make use of them if you have the resources!
+
+## Extracting entries mapping to a specific loci
+
+Use `samtools view` and the `ref:start-end` syntax to extract reads mapping within a specific genomic loci; this requires a BAM index file.
+
+
+## Indexing
+
+The index command creates a new index file that allows fast look-up of data in a (sorted) SAM or BAM.
+Like an index on a database, the generated *.sam.sai or* .bam.bai file allows programs that can read it to more efficiently work with the data in the associated files.
+
+An index file is needed to get access rapidly to different alignment regions in the BAM alignment file.
+
+Creating a BAM index file
+
+Various tools require BAM index files, such as IGV, which is a tool that can be used for visualising BAM files.
+
+```{zsh, engine.opts="-i"}
+
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+samtools index sorted.bam
+
+```
+
+index outputs two files, the index.bam file and an index.bam.bai file
+
+
+```{zsh, engine.opts="-i"}
+
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+samtools index sorted.bam sorted.bai
+
+```
+
+```{zsh, engine.opts="-i"}
+
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+samtools view sorted.bam IX:20000-30000 
+
+```
+
+In addition, you can save the output as another BAM file if you want. You need -b when piping to another command.
+
+```{zsh, engine.opts="-i"}
+
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+samtools view -b sorted.bam "IX:20000-30000" > sorted_chrIX_20000_30000.bam
+
+samtools view sorted_chrIX_20000_30000.bam| head -n 1
+
+```
+
+## stats
+
+mpileup The mpileup command produces a pileup format (or BCF) file giving, for each genomic coordinate, the overlapping read bases and indels at that position in the input BAM files(s).
+This can be used for SNP calling for example.
+
+```{zsh, engine.opts="-i"}
+
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+samtools mpileup -f FASTQ/r64/Saccharomyces_cerevisiae.R64-1-1.dna.toplevel.fa -s sorted.bam | head
+
+```
+
+flagstat Counts the number of alignments for each FLAG type.
+Looking at the content of the file using samtools view:
+
+`samtools flagstat` will indicate that some reads (about 10%) mapped to different chromosomes.
+
+```{zsh, engine.opts="-i"}
+
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+samtools flagstat aln.bam
+
+```
+
+SAMtools will make the data readeble, this data is then piped through head to show the first 10 lines of the file.
+
+## BAM flags
+
+The second column in a SAM/BAM file is the flag column; use the `flags` subcommand to understand specific flags.
+They may seem confusing at first but the encoding allows details about a read to be stored by just using a few digits.
+The trick is to convert the numerical digit into binary, and then use the table to interpret the binary numbers, where 1 = true and 0 = false.
+
+
+```{zsh, engine.opts="-i"}
+
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+samtools flags
+
+```
+
+Find out about a `73` flag.
+
+```{zsh, engine.opts="-i"}
+
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+samtools flags 73
+
+```
+
+## Counting 
+
+SAMtools view can be used to filter the alignment based on characters like mapping quality, chromosome, orientation etc.
+When the -c option is added the filtered selection is counted.
+
+Count the total number of records:
+
+```{zsh, engine.opts="-i"}
+
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+samtools view -c sorted.bam
+```
+
+Count the reads that align to the reverse strand:
+
+```{zsh, engine.opts="-i"}
+
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+samtools view -f 20 -c sorted.bam
+
+```
+
+Count the reads that do align:
+
+## Filtering unmapped reads
+
+Use `-F 4` to filter out unmapped reads.
+
+```{zsh, engine.opts="-i"}
+
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+samtools view -F 4 -b sorted.bam > mapped.bam
+
+```
+
+Use `-f 4` to keep only unmapped reads.
+
+```{zsh, engine.opts="-i"}
+
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+samtools view -f 4 -b sorted.bam > unmapped.bam
+
+```
+
+Here -F is used to exclude reads that fit samflag 4, read unmapped.
+Everything else is included.
+
+**Question** Sometimes you will see that this number of alignments is higher then the number of sequences in your fastq file.
+How can this be?
+
+When a read multimaps (aligned to multiple positions in the genome), each of these positions is included as a separate alignment.
+
+Count the reads that align to the forward strand:
+
+```{zsh, engine.opts="-i"}
+
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+samtools view -F 20 -c sorted.bam
+
+```
+
+Use -F 20 to exclude "read reverse strand" and "read unmapped".
+
+## Converting a BAM file to a SAM file
+
+A BAM file is just a SAM file but stored in binary format; you should always convert your SAM files into BAM format since they are smaller in size and are faster to manipulate.
+
+Note: remember to use `-h` to ensure the SAM file contains the sequence header information.
+Generally, I recommend storing only sorted BAM files as they use even less disk space and are faster to process.
+
+```{zsh, engine.opts="-i"}
+
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+samtools view -h aln.bam > aln.sam
+
+
+```
+
+Notice that the SAM file is much larger than the BAM file.
+
+Size of SAM file.
+
+```{zsh, engine.opts="-i"}
+
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+ls -lh aln.sam
+
+```
+
+Size of BAM file.
+
+```{zsh, engine.opts="-i"}
+
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+ls -lh aln.bam
+
+```
+
+We can use `head` to view a SAM file.
+
+```{zsh, engine.opts="-i"}
+
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+head aln.sam
+
+```
+
+
+The lines starting with an "\@" symbol contains the header information.
+The @SQ tag is the reference sequence dictionary; SN refers to the reference sequence name and LN refers to the reference sequence length.
+If you don't see lines starting with the "\@" symbol, the header information is probably missing.
+You can generate this information again by running the command below, where `ref.fa` is the reference FASTA file used to map the reads.
+
+## Stats
+
+For simple statistics use `samtools flagstat`.
+
+```{zsh, engine.opts="-i"}
+
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+samtools flagstat sorted.bam
+
+```
+
+For more stats, use `samtools stats`.
+
+```{zsh, engine.opts="-i"}
+
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+samtools stats sorted.bam | grep ^SN
+
+# The columns are: GC%, unique sequence percentiles, 10th, 25th, 50th, 75th and 90th depth percentile
+
+samtools stats sorted.bam | grep ^GCD | cut -f 2-
+
+```
+
+Use `samtools idxstats` to print stats on a BAM file; this requires an index file which is created by running `samtools index`.
+The output of idxstats is a file with four tab-delimited columns:
+
+1.  Reference name
+2.  Sequence length of reference
+3.  Number of mapped reads
+4.  Number of unmapped reads
+
+```{zsh, engine.opts="-i"}
+
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+samtools idxstats sorted.bam
+
+```
+
+We can use this with `awk` to calculate:
+
+The number of mapped reads by summing the third column.
+
+```{zsh, engine.opts="-i"}
+
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+samtools idxstats sorted.bam  | awk '{s+=$3} END {print s}'
+
+```
+
+The number of reads, which is the sum of mapped and unmapped reads.
+
+```{zsh, engine.opts="-i"}
+
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+samtools idxstats sorted.bam | awk '{s+=$3+$4} END {print s}'
+
+samtools view -F 4 -b sorted.bam > mapped.bam
+samtools view -f 4 -b sorted.bam > unmapped.bam
+
+```
+
+This number can never be bigger then the number of reads in the fastq file, as all reads in the output give a single alignment.
+
+## samtools calmd/fillmd
+
+The `calmd` or `fillmd` tool is useful for visualising mismatches and insertions in an alignment of a read to a reference genome. The `-e` argument changes identical bases between the read and reference into `=`.
+
+Note the need for a second -b inn the second command:
+
+```{zsh, engine.opts="-i"}
+
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+samtools view -b sorted.bam | samtools fillmd -b -e  - FASTQ/r64/Saccharomyces_cerevisiae.R64-1-1.dna.toplevel.fa > fillmd.bam
+
+samtools view fillmd.bam | head -n 1
+
+```
+
+## Coverage
+
+Coverage can mean the:
+
+1.  average depth of each covered base
+2.  percentage of bases covered
+
+`samtools depth` and `samtools mpileup` can be used to indicate the depth of each covered base (and used to calculate the average depth. `samtools coverage` will provide both the average depth and percentage of bases covered per chromosome/reference sequence.
+
+`samtools depth` will return three columns: reference, position, and coverage.
+
+```{zsh, engine.opts="-i"}
+
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+samtools depth sorted.bam | head
+
+```
+
+
+```{zsh, engine.opts="-i"}
+
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+samtools coverage sorted.bam
+
+```
+
+If you want reads mapped to a single reference (e.g. chromosome), just specify the `ref` and leave out the start and end values.
+
+```{zsh, engine.opts="-i"}
+
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+samtools view sorted.bam X | head -n 1
+
+```
+
+Returning to our coverage definition at the start of this section:
+
+1.  average depth of each covered base = `meandepth`
+2.  percentage of bases covered = `covbases`
+
+With SAMtools it is also possible to select alignments with a minimal mapping quality.
+Alignments with a maximal score (60 for hisat2 output files and 255 for STAR output files) are truly unique:
+
+```{zsh, engine.opts="-i"}
+
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+samtools view -q 60 -c sorted.bam
+
+```
+
+
+## 
+
+featureCounts -O -t gene -g ID -a ath_annotation.gff3 -o counts.txt mapped/\*.bam Here is an explanation of the different arguments used:
+
+-a <string>: Name of an annotation file.
+GTF/GFF format by default.
+-o <string>: Name of the output file including read counts.
+-O: Assign reads to all their overlapping meta-features.
+-t <string>: Specify feature type in the GTF/GFF annotation to summarise the counts.
+-g <string>: Specify attribute type in GTF/GFF annotation.
+This GTF/GFF determines the name of the features.
+The output file produced by featureCounts is a tab-delimited file that can be opened in a spreadsheet program like Excel.
+
+Key Points The SAM/BAM format is the end-result of a read alignment to a reference genome.
+
+```{zsh, engine.opts="-i"}
+
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+samtools view -bT FASTQ/r64/Saccharomyces_cerevisiae.R64-1-1.dna.toplevel.fa.gz aln.sam > aln.bam
+
+```
+
+Note that Rsamtools can do all these functions as well
+
+## Creating the counts file
+
+For downstream applications e.g. differential expression analysis, the number of reads that maps within a gene has to be determined for each sample.
+
+The featureCounts program from the Subread package can do this.
+
+featureCounts can count the number of reads that map within a feature.
+The Saccharomyces genome annotation in the GTF format contain three different features to choose from.
+
+Depending on the downstream applications the choice is gene, transcript or exon.
+In this study we are just looking for differentially expressed genes so our feature of interest specified by the -t will be gene.
+
+```{zsh, eval=FALSE, engine="sh"} 
+
+source $HOME/miniconda3-intel/bin/activate
+conda activate rnaseq
+featureCounts -O -t gene -g gene_id -a FASTQ/r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -o counts.txt BAM/*.bam
+
+```
+Here is an explanation of the different arguments used:
+
+-a <string>: Name of an annotation file. GTF/GFF format by default.
+-o <string>: Name of the output file including read counts.
+-O: Assign reads to all their overlapping meta-features.
+-t <string>: Specify feature type in the GTF/GFF annotation to summarise the counts.
+-g <string>: Specify attribute type in GTF/GFF annotation. This GTF/GFF determines the name of the features.
+
+We can put all of the above into a shell script. 
