@@ -20,8 +20,8 @@ For the latest information on SAMtools, please refer to the [release notes](http
 ```{zsh, eval=FALSE, engine="sh"}
 
 env /usr/bin/arch -x86_64 /bin/zsh --login 
-source $HOME/miniconda3-intel/bin/activate
-conda activate rnaseq
+source $HOME/miniconda3/bin/activate
+conda activate variant
 
 ```
 
@@ -75,8 +75,8 @@ Let's retrieve a bamfile to work with:
 
 cd RNA-genomics/
 
-source $HOME/miniconda3-intel/bin/activate
-conda activate rnaseq
+source $HOME/miniconda3/bin/activate
+conda activate variant
 
 chmod 777 BAM/ERR458493.bam
 
@@ -88,8 +88,8 @@ cat BAM/ERR458493.bam > aln.bam
 
 ```{zsh, eval=FALSE, engine="sh"}
 
-source $HOME/miniconda3-intel/bin/activate
-conda activate rnaseq
+source $HOME/miniconda3/bin/activate
+conda activate variant
 samtools view aln.bam | head
 
 ```
@@ -108,8 +108,8 @@ There are more sorting possibilities to be found with samtools sort --help.
 
 ```{zsh, engine.opts="-i"}
 
-source $HOME/miniconda3-intel/bin/activate
-conda activate rnaseq
+source $HOME/miniconda3/bin/activate
+conda activate variant
 samtools sort aln.bam -o sorted.bam
 
 ```
@@ -118,8 +118,8 @@ Only the input file name needs to be specified, based on this name a .bai (BAM i
 
 ```{zsh, engine.opts="-i"}
 
-source $HOME/miniconda3-intel/bin/activate
-conda activate rnaseq
+source $HOME/miniconda3/bin/activate
+conda activate variant
 ls -lh aln.bam
 ls -lh sorted.bam
 samtools view aln.bam | head -n 1
@@ -133,8 +133,8 @@ Time taken using one thread (default).
 
 ```{zsh, engine.opts="-i"}
 
-source $HOME/miniconda3-intel/bin/activate
-conda activate rnaseq
+source $HOME/miniconda3/bin/activate
+conda activate variant
 time samtools sort aln.bam -o sorted.bam
 
 ```
@@ -143,8 +143,8 @@ Time taken using four threads.
 
 ```{zsh, engine.opts="-i"}
 
-source $HOME/miniconda3-intel/bin/activate
-conda activate rnaseq
+source $HOME/miniconda3/bin/activate
+conda activate variant
 time samtools sort -@ 4 aln.bam -o sorted.bam
 
 ```
@@ -169,8 +169,8 @@ Various tools require BAM index files, such as IGV, which is a tool that can be 
 
 ```{zsh, engine.opts="-i"}
 
-source $HOME/miniconda3-intel/bin/activate
-conda activate rnaseq
+source $HOME/miniconda3/bin/activate
+conda activate variant
 samtools index sorted.bam
 
 ```
@@ -180,16 +180,16 @@ index outputs two files, the index.bam file and an index.bam.bai file
 
 ```{zsh, engine.opts="-i"}
 
-source $HOME/miniconda3-intel/bin/activate
-conda activate rnaseq
+source $HOME/miniconda3/bin/activate
+conda activate variant
 samtools index sorted.bam sorted.bai
 
 ```
 
 ```{zsh, engine.opts="-i"}
 
-source $HOME/miniconda3-intel/bin/activate
-conda activate rnaseq
+source $HOME/miniconda3/bin/activate
+conda activate variant
 samtools view sorted.bam IX:20000-30000 
 
 ```
@@ -198,8 +198,8 @@ In addition, you can save the output as another BAM file if you want. You need -
 
 ```{zsh, engine.opts="-i"}
 
-source $HOME/miniconda3-intel/bin/activate
-conda activate rnaseq
+source $HOME/miniconda3/bin/activate
+conda activate variant
 samtools view -b sorted.bam "IX:20000-30000" > sorted_chrIX_20000_30000.bam
 
 samtools view sorted_chrIX_20000_30000.bam| head -n 1
@@ -213,8 +213,8 @@ This can be used for SNP calling for example.
 
 ```{zsh, engine.opts="-i"}
 
-source $HOME/miniconda3-intel/bin/activate
-conda activate rnaseq
+source $HOME/miniconda3/bin/activate
+conda activate variant
 samtools mpileup -f FASTQ/r64/Saccharomyces_cerevisiae.R64-1-1.dna.toplevel.fa -s sorted.bam | head
 
 ```
@@ -226,8 +226,8 @@ Looking at the content of the file using samtools view:
 
 ```{zsh, engine.opts="-i"}
 
-source $HOME/miniconda3-intel/bin/activate
-conda activate rnaseq
+source $HOME/miniconda3/bin/activate
+conda activate variant
 samtools flagstat aln.bam
 
 ```
@@ -243,8 +243,8 @@ The trick is to convert the numerical digit into binary, and then use the table 
 
 ```{zsh, engine.opts="-i"}
 
-source $HOME/miniconda3-intel/bin/activate
-conda activate rnaseq
+source $HOME/miniconda3/bin/activate
+conda activate variant
 samtools flags
 
 ```
@@ -253,8 +253,8 @@ Find out about a `73` flag.
 
 ```{zsh, engine.opts="-i"}
 
-source $HOME/miniconda3-intel/bin/activate
-conda activate rnaseq
+source $HOME/miniconda3/bin/activate
+conda activate variant
 samtools flags 73
 
 ```
@@ -268,8 +268,8 @@ Count the total number of records:
 
 ```{zsh, engine.opts="-i"}
 
-source $HOME/miniconda3-intel/bin/activate
-conda activate rnaseq
+source $HOME/miniconda3/bin/activate
+conda activate variant
 samtools view -c sorted.bam
 ```
 
@@ -277,8 +277,8 @@ Count the reads that align to the reverse strand:
 
 ```{zsh, engine.opts="-i"}
 
-source $HOME/miniconda3-intel/bin/activate
-conda activate rnaseq
+source $HOME/miniconda3/bin/activate
+conda activate variant
 samtools view -f 20 -c sorted.bam
 
 ```
@@ -291,8 +291,8 @@ Use `-F 4` to filter out unmapped reads.
 
 ```{zsh, engine.opts="-i"}
 
-source $HOME/miniconda3-intel/bin/activate
-conda activate rnaseq
+source $HOME/miniconda3/bin/activate
+conda activate variant
 samtools view -F 4 -b sorted.bam > mapped.bam
 
 ```
@@ -301,8 +301,8 @@ Use `-f 4` to keep only unmapped reads.
 
 ```{zsh, engine.opts="-i"}
 
-source $HOME/miniconda3-intel/bin/activate
-conda activate rnaseq
+source $HOME/miniconda3/bin/activate
+conda activate variant
 samtools view -f 4 -b sorted.bam > unmapped.bam
 
 ```
@@ -319,8 +319,8 @@ Count the reads that align to the forward strand:
 
 ```{zsh, engine.opts="-i"}
 
-source $HOME/miniconda3-intel/bin/activate
-conda activate rnaseq
+source $HOME/miniconda3/bin/activate
+conda activate variant
 samtools view -F 20 -c sorted.bam
 
 ```
@@ -336,8 +336,8 @@ Generally, I recommend storing only sorted BAM files as they use even less disk 
 
 ```{zsh, engine.opts="-i"}
 
-source $HOME/miniconda3-intel/bin/activate
-conda activate rnaseq
+source $HOME/miniconda3/bin/activate
+conda activate variant
 samtools view -h aln.bam > aln.sam
 
 
@@ -349,8 +349,8 @@ Size of SAM file.
 
 ```{zsh, engine.opts="-i"}
 
-source $HOME/miniconda3-intel/bin/activate
-conda activate rnaseq
+source $HOME/miniconda3/bin/activate
+conda activate variant
 ls -lh aln.sam
 
 ```
@@ -359,8 +359,8 @@ Size of BAM file.
 
 ```{zsh, engine.opts="-i"}
 
-source $HOME/miniconda3-intel/bin/activate
-conda activate rnaseq
+source $HOME/miniconda3/bin/activate
+conda activate variant
 ls -lh aln.bam
 
 ```
@@ -369,8 +369,8 @@ We can use `head` to view a SAM file.
 
 ```{zsh, engine.opts="-i"}
 
-source $HOME/miniconda3-intel/bin/activate
-conda activate rnaseq
+source $HOME/miniconda3/bin/activate
+conda activate variant
 head aln.sam
 
 ```
@@ -387,8 +387,8 @@ For simple statistics use `samtools flagstat`.
 
 ```{zsh, engine.opts="-i"}
 
-source $HOME/miniconda3-intel/bin/activate
-conda activate rnaseq
+source $HOME/miniconda3/bin/activate
+conda activate variant
 samtools flagstat sorted.bam
 
 ```
@@ -397,8 +397,8 @@ For more stats, use `samtools stats`.
 
 ```{zsh, engine.opts="-i"}
 
-source $HOME/miniconda3-intel/bin/activate
-conda activate rnaseq
+source $HOME/miniconda3/bin/activate
+conda activate variant
 samtools stats sorted.bam | grep ^SN
 
 # The columns are: GC%, unique sequence percentiles, 10th, 25th, 50th, 75th and 90th depth percentile
@@ -417,8 +417,8 @@ The output of idxstats is a file with four tab-delimited columns:
 
 ```{zsh, engine.opts="-i"}
 
-source $HOME/miniconda3-intel/bin/activate
-conda activate rnaseq
+source $HOME/miniconda3/bin/activate
+conda activate variant
 samtools idxstats sorted.bam
 
 ```
@@ -429,8 +429,8 @@ The number of mapped reads by summing the third column.
 
 ```{zsh, engine.opts="-i"}
 
-source $HOME/miniconda3-intel/bin/activate
-conda activate rnaseq
+source $HOME/miniconda3/bin/activate
+conda activate variant
 samtools idxstats sorted.bam  | awk '{s+=$3} END {print s}'
 
 ```
@@ -439,8 +439,8 @@ The number of reads, which is the sum of mapped and unmapped reads.
 
 ```{zsh, engine.opts="-i"}
 
-source $HOME/miniconda3-intel/bin/activate
-conda activate rnaseq
+source $HOME/miniconda3/bin/activate
+conda activate variant
 samtools idxstats sorted.bam | awk '{s+=$3+$4} END {print s}'
 
 samtools view -F 4 -b sorted.bam > mapped.bam
@@ -458,8 +458,8 @@ Note the need for a second -b inn the second command:
 
 ```{zsh, engine.opts="-i"}
 
-source $HOME/miniconda3-intel/bin/activate
-conda activate rnaseq
+source $HOME/miniconda3/bin/activate
+conda activate variant
 samtools view -b sorted.bam | samtools fillmd -b -e  - FASTQ/r64/Saccharomyces_cerevisiae.R64-1-1.dna.toplevel.fa > fillmd.bam
 
 samtools view fillmd.bam | head -n 1
@@ -479,8 +479,8 @@ Coverage can mean the:
 
 ```{zsh, engine.opts="-i"}
 
-source $HOME/miniconda3-intel/bin/activate
-conda activate rnaseq
+source $HOME/miniconda3/bin/activate
+conda activate variant
 samtools depth sorted.bam | head
 
 ```
@@ -488,8 +488,8 @@ samtools depth sorted.bam | head
 
 ```{zsh, engine.opts="-i"}
 
-source $HOME/miniconda3-intel/bin/activate
-conda activate rnaseq
+source $HOME/miniconda3/bin/activate
+conda activate variant
 samtools coverage sorted.bam
 
 ```
@@ -498,8 +498,8 @@ If you want reads mapped to a single reference (e.g. chromosome), just specify t
 
 ```{zsh, engine.opts="-i"}
 
-source $HOME/miniconda3-intel/bin/activate
-conda activate rnaseq
+source $HOME/miniconda3/bin/activate
+conda activate variant
 samtools view sorted.bam X | head -n 1
 
 ```
@@ -514,8 +514,8 @@ Alignments with a maximal score (60 for hisat2 output files and 255 for STAR out
 
 ```{zsh, engine.opts="-i"}
 
-source $HOME/miniconda3-intel/bin/activate
-conda activate rnaseq
+source $HOME/miniconda3/bin/activate
+conda activate variant
 samtools view -q 60 -c sorted.bam
 
 ```
@@ -538,8 +538,8 @@ Key Points The SAM/BAM format is the end-result of a read alignment to a referen
 
 ```{zsh, engine.opts="-i"}
 
-source $HOME/miniconda3-intel/bin/activate
-conda activate rnaseq
+source $HOME/miniconda3/bin/activate
+conda activate variant
 samtools view -bT FASTQ/r64/Saccharomyces_cerevisiae.R64-1-1.dna.toplevel.fa.gz aln.sam > aln.bam
 
 ```
@@ -560,8 +560,8 @@ In this study we are just looking for differentially expressed genes so our feat
 
 ```{zsh, eval=FALSE, engine="sh"} 
 
-source $HOME/miniconda3-intel/bin/activate
-conda activate rnaseq
+source $HOME/miniconda3/bin/activate
+conda activate variant
 featureCounts -O -t gene -g gene_id -a FASTQ/r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -o counts.txt BAM/*.bam
 
 ```

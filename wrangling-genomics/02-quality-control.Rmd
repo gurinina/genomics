@@ -50,7 +50,7 @@ To download the data, run the commands below.
 Here we are using the `-p` option for `mkdir`. This option allows `mkdir` to create the new directory, even if one of the parent directories does not already exist. It also supresses errors if the directory already exists, without overwriting that directory. 
 
 It will take about 5' to download the files. You should have them already.
-```{zsh engine.opts='-i'}
+```{zsh, eval=FALSE, engine="sh"}
 
 mkdir -p ~/dc_workshop/data/untrimmed_fastq/
 cd ~/dc_workshop/data/untrimmed_fastq
@@ -87,7 +87,7 @@ wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR258/006/SRR2584866/SRR2584866_2.fastq
 ## Fastq format
 The data comes in a compressed format, which is why there is a `.gz` at the end of the file names. This makes it faster to transfer, and allows it to take up less space on our computer. Let's unzip one of the files so that we can look at the fastq format.
 
-```{zsh engine.opts='-i'}
+```{zsh, eval=FALSE, engine="sh"}
 
 cd ~/dc_workshop/data/untrimmed_fastq
 gunzip -f -dk SRR2584863_1.fastq.gz
@@ -113,7 +113,7 @@ include...
 
 We can view the first complete read in one of the files our dataset by using `head` to look at the first four lines.
 
-```{zsh engine.opts='-i'}
+```{zsh, eval=FALSE, engine="sh"}
 
 cd ~/dc_workshop/data/untrimmed_fastq
 head -n 4 SRR2584863_1.fastq
@@ -317,7 +317,7 @@ Here, we see positions within the read in which the boxes span a much wider rang
 
 We will now assess the quality of the reads that we downloaded. First, make sure you are still in the `untrimmed_fastq` directory
 
-```{zsh engine.opts='-i'}
+```{zsh, eval=FALSE, engine="sh"}
 
 cd ~/dc_workshop/data/untrimmed_fastq/
 
@@ -342,10 +342,10 @@ We need to run this in the terminal -- it takes too long here --
 
 
 
-```{zsh engine.opts='-i'}
+```{zsh, eval=FALSE, engine="sh"}
 
 cd ~/dc_workshop/data/untrimmed_fastq
-source $HOME/miniconda3-intel/bin/activate
+source $HOME/miniconda3/bin/activate
 conda activate variant
 fastqc *.fastq* 
 
@@ -379,7 +379,7 @@ Analysis complete for SRR2589044_2.fastq.gz
 The FastQC program has created several new files within our
 `data/untrimmed_fastq/` directory.
 
-```{zsh engine.opts='-i'}
+```{zsh, eval=FALSE, engine="sh"}
 
 cd ~/dc_workshop/data/untrimmed_fastq/
 ls
@@ -397,7 +397,7 @@ We want to keep our data files and our results files separate, so we
 will move these
 output files into a new directory within our `results/` directory.
 
-```{zsh engine.opts='-i'}
+```{zsh, eval=FALSE, engine="sh"}
 
 cd ~/dc_workshop/data/untrimmed_fastq/
 mkdir -p ~/dc_workshop/results/fastqc_untrimmed_reads
@@ -409,7 +409,7 @@ mv *.html ~/dc_workshop/results/fastqc_untrimmed_reads/
 Now we can navigate into this results directory and do some closer
 inspection of our output files.
 
-```{zsh engine.opts='-i'}
+```{zsh, eval=FALSE, engine="sh"}
 
 cd ~/dc_workshop/data/untrimmed_fastq/
 
@@ -425,7 +425,7 @@ we are transferring. Let's put it on our dc_workshop folder for now. Open a new
 tab in your terminal program (you can use the pull down menu at the
 top of your screen or the Cmd+t keyboard shortcut) and type:
 
-```{zsh engine.opts='-i'}
+```{zsh, eval=FALSE, engine="sh"}
 
 mkdir -p ~/dc_workshop/fastqc_html
 mkdir -p ~/dc_workshop/fastqc_html/untrimmed
@@ -478,7 +478,7 @@ in your terminal program that is connected to your AWS instance
 (the tab label will start with `dcuser@ip`) and make sure you are in
 our results subdirectory.   
 
-```{zsh engine.opts='-i'}
+```{zsh, eval=FALSE, engine="sh"}
 
 cd ~/dc_workshop/results/fastqc_untrimmed_reads/
 ls
@@ -515,7 +515,7 @@ unzip $filename
 done
 
 the above resulted in an endless loop when knitted, switched to this:
-```{zsh engine.opts='-i'}
+```{zsh, eval=FALSE, engine="sh"}
 
 cd ~/dc_workshop/results/fastqc_untrimmed_reads/
 find . -name "*.zip" | while read filename; do unzip -o -d "`dirname "$filename"`" "$filename"; done;
@@ -577,7 +577,7 @@ The `.html` files and the uncompressed `.zip` files are still present,
 but now we also have a new directory for each of our samples. We can 
 see for sure that it is a directory if we use the `-F` flag for `ls`. 
 
-```{zsh engine.opts='-i'}
+```{zsh, eval=FALSE, engine="sh"}
 
 cd ~/dc_workshop/results/fastqc_untrimmed_reads/
 ls -F
@@ -586,7 +586,7 @@ ls -F
 
 Let's see what files are present within one of these output directories.
 
-```{zsh engine.opts='-i'}
+```{zsh, eval=FALSE, engine="sh"}
 
 cd ~/dc_workshop/results/fastqc_untrimmed_reads/
 ls -F SRR2584863_1_fastqc/
@@ -597,7 +597,7 @@ fastqc_data.txt  fastqc.fo  fastqc_report.html	Icons/	Images/  summary.txt
 
 Use `less` to preview the `summary.txt` file for this sample.
 
-```{zsh engine.opts='-i'}
+```{zsh, eval=FALSE, engine="sh"}
 
 cd ~/dc_workshop/results/fastqc_untrimmed_reads/
 less SRR2584863_1_fastqc/summary.txt
@@ -615,10 +615,10 @@ by concatenating all of our `summary.txt` files into a single file
 using the `cat` command. We will call this `fastqc_summaries.txt` and move
 it to `~/dc_workshop/docs`.
 
-```{zsh engine.opts='-i'}
+```{zsh, eval=FALSE, engine="sh"}
 
 cd ~/dc_workshop/results/fastqc_untrimmed_reads/
-cat */summary.txt ~/dc_workshop/docs/fastqc_summaries.txt
+cat */summary.txt > ~/dc_workshop/docs/fastqc_summaries.txt
 
 ```
 

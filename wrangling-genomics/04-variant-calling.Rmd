@@ -88,7 +88,7 @@ Our first step is to index the reference genome for use by BWA. Indexing allows 
 
 cd ~/dc_workshop
 
-source $HOME/miniconda3-intel/bin/activate
+source $HOME/miniconda3/bin/activate
 conda activate variant
 bwa index data/ref_genome/ecoli_rel606.fasta
 
@@ -118,7 +118,7 @@ An **example** of what a `bwa` command looks like is below. This command will no
 
 cd ~/dc_workshop
 
-source $HOME/miniconda3-intel/bin/activate
+source $HOME/miniconda3/bin/activate
 conda activate variant
 bwa mem ref_genome.fasta input_file_R1.fastq input_file_R2.fastq > output.sam
 
@@ -136,7 +136,7 @@ iterating this whole process on all of our sample files.
 
 cd ~/dc_workshop
 
-source $HOME/miniconda3-intel/bin/activate
+source $HOME/miniconda3/bin/activate
 conda activate variant
 bwa mem data/ref_genome/ecoli_rel606.fasta data/trimmed_fastq_small/SRR2584866_1.trim.sub.fastq data/trimmed_fastq_small/SRR2584866_2.trim.sub.fastq > results/sam/SRR2584866.aligned.sam
 
@@ -184,7 +184,7 @@ We will convert the SAM file to BAM format using the `samtools` program with the
 ```{zsh, engine.opts="-i"}
 
 cd ~/dc_workshop
-source $HOME/miniconda3-intel/bin/activate
+source $HOME/miniconda3/bin/activate
 conda activate variant
 samtools view -S -b results/sam/SRR2584866.aligned.sam > results/bam/SRR2584866.aligned.bam
 
@@ -197,7 +197,7 @@ Next we sort the BAM file using the `sort` command from `samtools`. `-o` tells t
 ```{zsh, engine.opts="-i"}
 
 cd ~/dc_workshop
-source $HOME/miniconda3-intel/bin/activate
+source $HOME/miniconda3/bin/activate
 conda activate variant
 samtools sort -o results/bam/SRR2584866.aligned.sorted.bam results/bam/SRR2584866.aligned.bam 
 
@@ -214,7 +214,7 @@ You can use samtools to learn more about this bam file as well.
 ```{zsh, engine.opts="-i"}
 
 cd ~/dc_workshop
-source $HOME/miniconda3-intel/bin/activate
+source $HOME/miniconda3/bin/activate
 conda activate variant
 samtools flagstat results/bam/SRR2584866.aligned.sorted.bam
 
@@ -261,7 +261,7 @@ bcf format output file, `-o` specifies where to write the output file, and `-f` 
 
 cd ~/dc_workshop
 
-source $HOME/miniconda3-intel/bin/activate
+source $HOME/miniconda3/bin/activate
 conda activate variant
 bcftools mpileup -O b -o results/bcf/SRR2584866_raw.bcf \
 -f data/ref_genome/ecoli_rel606.fasta results/bam/SRR2584866.aligned.sorted.bam
@@ -279,7 +279,7 @@ Identify SNVs using bcftools `call`. We have to specify ploidy with the flag `--
 
 cd ~/dc_workshop
  
-source $HOME/miniconda3-intel/bin/activate
+source $HOME/miniconda3/bin/activate
 conda activate variant
 bcftools call --ploidy 1 -m -v -o results/vcf/SRR2584866_variants.vcf results/bcf/SRR2584866_raw.bcf 
 
@@ -298,7 +298,7 @@ Filter the SNVs for the final output in VCF format, using `vcfutils.pl`:
 
 cd ~/dc_workshop
  
-source $HOME/miniconda3-intel/bin/activate
+source $HOME/miniconda3/bin/activate
 conda activate variant
 vcfutils.pl varFilter results/vcf/SRR2584866_variants.vcf > results/vcf/SRR2584866_final_variants.vcf
 
@@ -421,7 +421,7 @@ In order for us to visualize the alignment files, we will need to index the BAM 
 ```{zsh, engine.opts="-i"}
 
 cd ~/dc_workshop
-source $HOME/miniconda3-intel/bin/activate
+source $HOME/miniconda3/bin/activate
 conda activate variant
 samtools index results/bam/SRR2584866.aligned.sorted.bam
 
@@ -438,7 +438,7 @@ In order to visualize our mapped reads, we use `tview`, giving it the sorted bam
 ```{zsh, eval=FALSE, engine="sh"}
 
 cd ~/dc_workshop
-source $HOME/miniconda3-intel/bin/activate
+source $HOME/miniconda3/bin/activate
 conda activate variant
 samtools tview results/bam/SRR2584866.aligned.sorted.bam data/ref_genome/ecoli_rel606.fasta
 

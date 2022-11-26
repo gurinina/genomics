@@ -33,7 +33,7 @@ Trimmomatic has a variety of options to trim your reads. If we run the following
 
 cd ~/dc_workshop/data/untrimmed_fastq
 
-source $HOME/miniconda3-intel/bin/activate
+source $HOME/miniconda3/bin/activate
 conda activate variant
 trimmomatic
 
@@ -131,7 +131,7 @@ The adapter sequences came with the installation of trimmomatic, so we will firs
 ```{zsh, engine.opts="-i"}
 
 cd ~/dc_workshop/data/untrimmed_fastq/
-cp -R ~/miniconda3-intel/pkgs/trimmomatic-0.36-6/share/trimmomatic-0.36-6/adapters/NexteraPE-PE.fa ~/dc_workshop/data/untrimmed_fastq/
+cp -R ~/miniconda3/pkgs/trimmomatic-0.36-6/share/trimmomatic-0.36-6/adapters/NexteraPE-PE.fa ~/dc_workshop/data/untrimmed_fastq/
 
 ```
 
@@ -149,7 +149,7 @@ to run properly. This command will take a few minutes to run.
 
 cd ~/dc_workshop/data/untrimmed_fastq
 
-source $HOME/miniconda3-intel/bin/activate
+source $HOME/miniconda3/bin/activate
 conda activate variant
 trimmomatic PE SRR2584863_1.fastq.gz SRR2584863_2.fastq.gz \
                 SRR2584863_1.trim.fastq.gz SRR2584863_1un.trim.fastq.gz \
@@ -218,11 +218,11 @@ gzip -f SRR2584863_1.fastq
 
 ```
 
-```{zsh, engine.opts="-i"}
+```{zsh, eval=FALSE, engine="sh"}
 
 cd ~/dc_workshop/data/untrimmed_fastq/
 
-source $HOME/miniconda3-intel/bin/activate
+source $HOME/miniconda3/bin/activate
 conda activate variant
 for infile in *_1.fastq.gz
 do
@@ -262,7 +262,7 @@ to a new subdirectory within our `data/` directory.
 
 
 
-```{zsh, engine.opts="-i"}
+```{zsh, eval=FALSE, engine="sh"}
 
 cd ~/dc_workshop/data/untrimmed_fastq
 mkdir -p ../trimmed_fastq

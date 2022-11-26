@@ -188,7 +188,7 @@ But we forgot two lines...Anyone know what they are?
 
 We need to add to the beginning (unless you have fastqc installed in homebrew):
 
-source $HOME/miniconda3-intel/bin/activate
+source $HOME/miniconda3/bin/activate
 conda activate variant
 
 Go back to nano and add these after set -e.
@@ -292,7 +292,7 @@ First, we add the two lines to activate conda in the downloaded script. Notice t
 
 ```{zsh, eval=FALSE, engine="sh"}
 
-source $HOME/miniconda3-intel/bin/activate
+source $HOME/miniconda3/bin/activate
 conda activate variant
 cd ~/dc_workshop/results
 

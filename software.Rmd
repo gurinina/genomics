@@ -44,7 +44,7 @@ Conda comes in two flavors:  Anaconda and Miniconda.  We want to install Minicon
 **Mac OS**
 Download the script on this [page](https://docs.conda.io/en/latest/miniconda.html) for your operating system
 
-**For mac m1 users:**: if you have a mac m1 chip, do not install the arm64 shell script, use the MacOSX-x86_64.sh one. Then when the software asks you where you want to install it, instead of your home directory/miniconda3 install it into your home directory/miniconda3-intel so you remember you are installing the intel version in case you also want to install the arm64 version later (but you won't need it for this class). You will have to firts install Rosetta 2 if you don't have it: (see below)**
+**For mac m1 users:**: if you have a mac m1 chip, do not install the arm64 shell script, use the MacOSX-x86_64.sh one. Then when the software asks you where you want to install it, instead of your home directory/miniconda3 install it into your home directory/miniconda3-intel so you remember you are installing the intel version in case you also want to install the arm64 version later (but you won't need it for this class). You will have to first install Rosetta 2 if you don't have it: (see below)**
 
 ```{zsh, eval=FALSE, engine="sh"}
 
@@ -76,9 +76,9 @@ sh Miniconda3-latest-MacOSX-x86_64.sh
 
 ```
 
-When the program says Miniconda3 will now be install into this location:, say /Users/yourusername/miniconda3
+When the program says Miniconda3 will now be install into this location:, say /Users/your-username/miniconda3 say yes or type
 
-specify a different location and type: /Users/your-username/miniconda3-intel
+specify a different location and type: /Users/your-username/miniconda3
 
 This will bring you through the install process
 When it asks if you want to initialize conda, say no.
@@ -99,21 +99,24 @@ source $HOME/miniconda3/bin/activate
 ```
 
 **For mac m1 users:**
-You need to switch to to the intel architecture to activate. You need to do that everytime you use conda. You do that like this:
+You need to activate conda every time you use conda. You do that like this:
+
 ```{zsh, eval=FALSE, engine="sh"}
 
 
-source $HOME/miniconda3-intel/bin/activate
+source $HOME/miniconda3/bin/activate
 
 ```
 
-This next step may only be necessary if you're running a newer MacOS that uses the zsh shell. **I actually don't think you need it, at least  not on a mac m1 mac.**
+This next step may only be necessary if you're running a newer MacOS that uses the zsh shell.
 
 ```{zsh, eval=FALSE, engine="sh"}
 
 conda init zsh
 
 ```
+
+If it says to restart your terminal for effects to take place, quit and restart your terminal. 
 
 then type the following:
 
@@ -124,13 +127,6 @@ sudo ln -s $HOME/miniconda3/etc/profile.d/conda.sh
 
 You only need to do this once.
 
-**For mac m1 users:**
-
-```{zsh, eval=FALSE, engine="sh"}
-
-sudo ln -s $HOME/miniconda3-intel/etc/profile.d/conda.sh
-
-```
 
 **Windows OS**
 We will first install Miniconda and then add three new locations to your system environment path for conda to be recognized as a command in your Command Prompt. 
@@ -156,10 +152,20 @@ Click "OK" to close the "System Properties" window
 
 ## Configuring your Conda installation
 Now make sure Conda works and explore a bit using the lines below
-
 conda info #to view all the details about your conda set-up
 conda info --envs #to view all the environments available to you (note, since 
 you just installed miniconda, you'll only have a 'base' environment available)
+
+**Note**
+If nothing shows up, when you type conda info then you'll have to, like me, type in:
+
+```{zsh, eval=FALSE, engine="sh"}
+source $HOME/miniconda3/bin/activate
+```
+
+every time you want to use conda, 
+or source $HOME/miniconda3-intel/bin/activate if you set yourself up that way on a **Mac m1** per earlier instructions.
+
 One of the things that makes Conda so great for software installation is that it has access to various channels where many pre-packaged bioinformatics programs can be downloaded with all their dependencies.  Let's configure our Conda installation now so that it knows which channels to look for.
 
 
@@ -241,7 +247,7 @@ Now that you have Subread installed, you're going to install additional software
 
 conda install -c bioconda fastqc 
 conda install -c bioconda multiqc
-conda install -c conda-forge -c bioconda samtools=1.11
+
 ```
 
 Check that both installed correctly. 
@@ -254,11 +260,13 @@ When you are done type:
 conda deactivate
 
 conda create --name variant
-conda install -c bioconda fastqc=0.11.7=5
-conda install -c bioconda trimmomatic=0.38=0
-conda install -c bioconda bwa=0.7.17=ha92aebf_3
-conda install -c bioconda bcftools=1.8=h4da6232_3
-conda install -c conda-forge -c bioconda samtools=1.11
+conda activate variant
+conda install -c bioconda fastqc
+conda install -c bioconda trimmomatic
+conda install -c bioconda bwa
+conda install -c bioconda bcftools
+conda install -c bioconda samtools
+conda deactivate
 
 ```
 
@@ -446,7 +454,7 @@ Each of the three file types has its own directory on the FTP server. A folder e
 
 ftp://ftp.sra.ebi.ac.uk/vol1/<file-ype>/ERR164/ERR164407
 
-It follows that the ftp addresses for our files are as listed below. We can download the files using the curl command. Options: -L, follows redirects, -O, write the outputto a file named as the remote file, -R, time the download. Make a FASTQ directory and then navigate there. You can copy and paste all of the curl lines in at once:
+It follows that the ftp addresses for our files are as listed below. We can download the files using the curl command. Options: -L, follows redirects, -O, write the outputto a file named as the remote file, -R, time the download. Make a FASTQ directory in your RNA genomics folder and then navigate there. You can copy and paste all of the curl lines in at once, this will take about 7' to download:
 
 ```{zsh, eval=FALSE, engine="sh"}
 
@@ -488,7 +496,7 @@ The two other big files that you have are, first the DNA sequence, and second th
 **macOS**
 ```{zsh, eval=FALSE, engine="sh"}
 
-cd ~/Documents/RProjects/genomics/rna-genomics/FASTQ
+cd ~/Documents/RProjects/genomics/rna-genomics/FASTQ/r64
 
 curl -L -R -O ftp://ftp.ensembl.org/pub/release-96/fasta/saccharomyces_cerevisiae/dna/Saccharomyces_cerevisiae.R64-1-1.dna.toplevel.fa.gz
 

@@ -40,10 +40,15 @@ vignettes/*.pdf
 
 .DS_Store
 
-.RProj
+*.RProj
 
 .RData
 
 .Rhistory
+
+*.md
+
+_book
+
 
 
