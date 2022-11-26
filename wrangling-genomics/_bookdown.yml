@@ -1,0 +1,6 @@
+book_filename: wrangling-genomics
+new_session: yes
+rmd_files: ["index.Rmd","01-background.Rmd","02-quality-control.Rmd", "03-trimming.Rmd",
+ "04-variant-calling.Rmd","05-automation.Rmd"]
+delete_merged_file: true
+
