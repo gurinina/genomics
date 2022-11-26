@@ -1,0 +1,512 @@
+# Software
+
+```{r setup, include = FALSE}
+
+knitr::opts_chunk$set(
+  engine = list('zsh'),
+  engine.path = list('/bin/zsh'),
+  engine.opts = list(zsh = "-i")
+                      )
+
+```
+**Note: When I'm not running these commands, I'm setting the chunk to `zsh, eval=FALSE, engine="sh"`, you need to reset them to `zsh` or `zsh engine.opts='-i'` if you want them to run. I would suggest you copy and paste them into your  terminal though and not run them all at once so you can carefully monitor what is happening. Running bash in Rmarkdown also doesn't work well -- chunks do not communicate with eachother -- so one chunk will have no memory of something that was done in another chunk, and you have to reset your working directory for every chunk. It's also much slower. For these reasons it is better to copy paste into your terminal.**
+
+**Conda for bioinformatics**
+This document accompanies the DIYtranscriptomics course and is intended to provide basic guidance in the installation of various bioinformatics softwares using Conda.  If you have problems...don't worry, we're here to help.
+
+**What is Conda and why should you install it?**
+
+**Overview**
+Install Miniconda
+Mac OS
+Windows OS
+Configuring your Conda installation
+Create your first Conda environment
+Rinse and repeat
+Install other software we'll use for the course
+Useful Conda tips
+Generally useful Conda commands
+Don't get carried away with your 'base' conda environment
+Backup plan if Conda doesn't work for you
+Plan B for Mac OS
+Plan B for Windows OS
+
+**What is Conda and why should you install it?**
+Taken directly from the Conda manual:
+
+Conda is an open-source package management system and environment management system that runs on Windows, macOS, and Linux. Conda quickly installs, runs, and updates packages and their dependencies. Conda easily creates, saves, loads, and switches between environments on your local computer. It was created for Python programs but it can package and distribute software for any language.
+Note: when you read 'package' in the text above, just think 'software'.  An environment, on the the other hand, is the software plus everything else that this software needs to run properly.  This point is key to understanding why Conda has become a preferred way for installing a wide range of bioinformatics software – because it does a pretty good job (not perfect) of avoiding Dependency Hell.
+
+**Install Miniconda**
+Conda comes in two flavors:  Anaconda and Miniconda.  We want to install Miniconda, because it's much more lightweight while still meeting all of our needs.  Importantly, when we install Miniconda, we'll be getting the Python programming language as part of that installation.
+
+
+**Mac OS**
+Download the script on this [page](https://docs.conda.io/en/latest/miniconda.html) for your operating system
+
+**For mac m1 users:**: if you have a mac m1 chip, do not install the arm64 shell script, use the MacOSX-x86_64.sh one. Then when the software asks you where you want to install it, instead of your home directory/miniconda3 install it into your home directory/miniconda3-intel so you remember you are installing the intel version in case you also want to install the arm64 version later (but you won't need it for this class). You will have to firts install Rosetta 2 if you don't have it: (see below)**
+
+```{zsh, eval=FALSE, engine="sh"}
+
+softwareupdate --install-rosetta
+
+```
+
+Move this shell script (.sh) file to your home folder on your Mac ($HOME directory), and enter the following line into your terminal application. 
+
+Install this version even if you have an m1 mac:
+```{zsh, eval=FALSE, engine="sh"}
+
+
+curl -O https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh
+bash Miniconda3-latest-MacOSX-x86_64.sh -b -p $HOME/
+
+
+```
+
+**Note: for mac m1 users**
+
+Install this version even if you have an m1 mac:
+```{zsh, eval=FALSE, engine="sh"}
+
+
+curl -O https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh
+sh Miniconda3-latest-MacOSX-x86_64.sh
+
+
+```
+
+When the program says Miniconda3 will now be install into this location:, say /Users/yourusername/miniconda3
+
+specify a different location and type: /Users/your-username/miniconda3-intel
+
+This will bring you through the install process
+When it asks if you want to initialize conda, say no.
+When it is done, type:
+
+```{zsh, eval=FALSE, engine="sh"}
+
+conda config --set auto_activate_base false
+
+```
+
+Now 'source' conda so that it is available to you from the command line regardless of which directory you're in 
+
+```{zsh, eval=FALSE, engine="sh"}
+
+source $HOME/miniconda3/bin/activate
+
+```
+
+**For mac m1 users:**
+You need to switch to to the intel architecture to activate. You need to do that everytime you use conda. You do that like this:
+```{zsh, eval=FALSE, engine="sh"}
+
+
+source $HOME/miniconda3-intel/bin/activate
+
+```
+
+This next step may only be necessary if you're running a newer MacOS that uses the zsh shell. **I actually don't think you need it, at least  not on a mac m1 mac.**
+
+```{zsh, eval=FALSE, engine="sh"}
+
+conda init zsh
+
+```
+
+then type the following:
+
+```{zsh, eval=FALSE, engine="sh"}
+
+sudo ln -s $HOME/miniconda3/etc/profile.d/conda.sh 
+```
+
+You only need to do this once.
+
+**For mac m1 users:**
+
+```{zsh, eval=FALSE, engine="sh"}
+
+sudo ln -s $HOME/miniconda3-intel/etc/profile.d/conda.sh
+
+```
+
+**Windows OS**
+We will first install Miniconda and then add three new locations to your system environment path for conda to be recognized as a command in your Command Prompt. 
+
+Download the Miniconda executable (.exe) from [here](https://docs.conda.io/en/latest/miniconda.html) and double click the .exe to run the setup guide
+Click "Next >" to continue
+Click "I Agree"
+Verify that the installation type "Just Me (recommended)" is selected and then click "Next >"
+Use the default destination folder which should resemble C:\Users\yourname\Miniconda3. We will need the path to this destination folder soon so copy it to your clipboard and then click "Next >"
+Check "Register Miniconda3 as my default Python 3.9" and then click "Install"
+Using the search box in the toolbar at the bottom of your screen, search for "environment variables" and then click on "Edit the system environment variables"
+Click "Environment Variables..."
+Under "System variables" click on "Path" so that row is highlighted in blue and click "Edit..."
+Click "New"
+In the box that appears, paste the file path that you copied in step 5. It should look like C:\Users\yourname\Miniconda3\
+Click "New"
+Paste the file path that you copied in step 5 but modify it so that it looks like C:\Users\yourname\Miniconda3\Scripts\
+Click "New"
+Paste the file path that you copied in step 5 but modify it so that it looks like C:\Users\yourname\Miniconda3\Library\bin\
+Click "OK" to close the "Edit environment variable" window
+Click "OK" to close the "Environment Variables" window
+Click "OK" to close the "System Properties" window
+
+## Configuring your Conda installation
+Now make sure Conda works and explore a bit using the lines below
+
+conda info #to view all the details about your conda set-up
+conda info --envs #to view all the environments available to you (note, since 
+you just installed miniconda, you'll only have a 'base' environment available)
+One of the things that makes Conda so great for software installation is that it has access to various channels where many pre-packaged bioinformatics programs can be downloaded with all their dependencies.  Let's configure our Conda installation now so that it knows which channels to look for.
+
+
+```{zsh, eval=FALSE, engine="sh"}
+
+conda config --add channels defaults
+conda config --add channels bioconda
+conda config --add channels conda-forge
+conda config --set offline false
+
+```
+
+**Create your first Conda environment**
+Some of the most basic pieces of command-line software we discuss and use at the beginning of course aren't available in R/bioconductor.  Instead, we'll install these into a single 'environment' using Conda, which makes managing dependencies much less frustrating.  We'll be using Conda to install Subread, fastqc, and MultiQC.
+
+Begin by creating an empty environment called 'rnaseq'...or name it whatever you'd like
+
+
+```{zsh, eval=FALSE, engine="sh"}
+
+conda create --name rnaseq 
+
+```
+
+Now activate your newly created environment
+
+```{zsh, eval=FALSE, engine="sh"}
+
+
+conda activate rnaseq 
+
+```
+
+
+Notice that your terminal should now show that you have now entered the 'rnaseq' environment. 
+
+Now let's install some commonly used RNA-seq software inside this environment.  Begin with Subread, which is our go-to tool for read mapping.
+
+Note: if you get a y/n question during installation, respond yes by typing 'y' and enter.
+
+Note: the most important piece of software here is Subread.  If you encounter issues installing FastQC and/or MultiQC, just move on...it will not impact your ability to participate in the course.
+
+On mac, you can install subread using command below.
+
+```{zsh, eval=FALSE, engine="sh"}
+
+
+conda install -c bioconda subread
+
+```
+
+
+
+Test to see if it worked by typing:
+```{zsh, eval=FALSE, engine="sh"}
+
+
+subread-align -v
+
+```
+
+But windows version is not present in any of the conda channels. So, you need to follow these steps:
+a.	download the “ /subread-2.0.3/subread-2.0.3-Windows-x86_64.tar.gz” manually from https://sourceforge.net/projects/subread/files/subread-2.0.3/ 
+b.	unpack the package using any zip programs you have on your computer (e.g. 7-zip).
+c.	Copy the package to C:/Users/your-name/miniconda3/pkgs/ and the bin content to rnaseq env (as this is the first software you are installing you  may need to generate the bin folder in rnaseq directory).
+d.	Add path of the rnaseq bin folder to the environment variables as done before.
+e.	Restart the prompt.
+
+If your Subread installation worked, then you should see something in your terminal that resembles the output below (basically, Subread is saying "I'm here, now what would you like me to do?!").  If so, take a second to pat yourself on the back – you just installed your first piece of software using Conda! 🎉 🎊
+
+Note: if you are using Windows and the subread installation using conda was unsuccessful, follow the instructions in the Plan B for Windows OS section.
+
+
+**Rinse and repeat**
+Now that you have Subread installed, you're going to install additional software into the same 'rnaseq' environment.  
+
+
+```{zsh, eval=FALSE, engine="sh"}
+
+conda install -c bioconda fastqc 
+conda install -c bioconda multiqc
+conda install -c conda-forge -c bioconda samtools=1.11
+```
+
+Check that both installed correctly. 
+
+
+When you are done type:
+
+```{zsh, eval=FALSE, engine="sh"}
+
+conda deactivate
+
+conda create --name variant
+conda install -c bioconda fastqc=0.11.7=5
+conda install -c bioconda trimmomatic=0.38=0
+conda install -c bioconda bwa=0.7.17=ha92aebf_3
+conda install -c bioconda bcftools=1.8=h4da6232_3
+conda install -c conda-forge -c bioconda samtools=1.11
+
+```
+
+
+On windows, samtools doesn't have a PC version, so instead you can install Rsamtools in R.
+
+
+Note: if your laptop runs Windows, you may encounter some issues with fastqc.  It should install without issue but fastqc may not be recognized as an internal or external command, operable program or batch file.  If so, no worries, it won't affect your ability to participate in the course.  However, you may want to try installing a similar program for quality control analysis of raw reads, called fastp.  You can install fastp using conda install -c bioconda fastp. Another alternative is to install FastQC manually and use it in its interactive mode. Instructions for this can be found in the Plan B for Windows OS section.
+
+
+**Useful Conda tips**
+Check out [this](https://www.anaconda.com/blog/understanding-conda-and-pip) article for a nice breakdown of the between Conda and the package manager, Pip.
+
+**Generally useful Conda commands**
+if conda is not working try rerunning
+
+
+```{zsh, eval=FALSE, engine="sh"}
+
+source $HOME/miniconda3/bin/activate
+
+```
+
+conda list #shows you everything installed in your current environment
+conda remove --name myenv --all #remove any environment (substitute your env name for 'myenv')
+conda search myenv #search your channels for a specific package called 'myenv'
+conda update --all #update conda
+nano $HOME/.condarc #view your list of channels 
+
+Don't get carried away with your 'base' conda environment
+
+When you install conda, you automatically get a 'base' environment.  In fact, you may find that when you open your terminal or shell application, that you are placed in the base env by default.  Avoid installing lots of software in base or, eventually, you will run into conflicts.
+
+**Backup plan if Conda doesn't work for you**
+You should only be reading this if the steps above failed.  So, what do you do if Conda doesn't install properly or you aren't able to install the software above?  No worries, we can probably help. In the event that we can't resolve your IT issues, we have a backup plan to help you get the most essential software for the course installed.
+
+
+**Plan B for Mac OS**
+If you’re running a Mac OS, then it's a good idea to install Homebrew, which has nothing to do with Conda but is a fantastic package manager for the MacOS.  Although this isn't essential for the class, it will make your life a lot easier when you try to install software in future.  To get Homebrew, enter the following line into your terminal.
+
+```{zsh, eval=FALSE, engine="sh"}
+
+/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+
+```
+
+Some, but not all, of the software we installed using Conda above is also available for MacOS using Homebrew.  Go ahead and install as follows:
+
+```{zsh, eval=FALSE, engine="sh"}
+
+brew install fastqc
+brew install samtools
+
+```
+
+**Plan B for Windows OS**
+Install Rsubread through Rstudio
+
+Obtain administrative access for your computer
+
+You should install Cygwin to give your PC some linux functionality (like running shell scripts)
+
+Work through the following steps to install FastQC on your Windows OS:
+1. Go to https://www.bioinformatics.babraham.ac.uk/projects/fastqc/ and click "Download Now"
+2. Click "FastQC v0.11.9 (Win/Linux zip file)"
+3. Click "OK" to open the compressed zip folder
+4. Click "Extract all"
+5. Click "Browse..." to navigate to C:\Program Files and click "Select Folder"
+6. Click "Extract"
+7. Although you've now installed FastQC, it relies on Java which also must be installed. Go to https://adoptopenjdk.net/ and verify that "OpenJDK 11 (LTS)" and "HotSpot" are selected and click "Latest release"
+8. Click "Save File"
+9. Once it's downloaded, double click on "OpenJDK11U-jdk_x64_windows_hotspot_11.0.12_7.msi"
+10. In the setup wizard, click "Next"
+11. Review the default installation settings and click "Next"
+12. Click "Install"
+13. Click "Finish"
+14. To check that Java was installed correctly, open Command Prompt and run java --version. You should see:
+
+openjdk 11.0.12 2021-07-20
+OpenJDK Runtime Environment Temurin-11.0.12+7 (build 11.0.12+7)
+OpenJDK 64-Bit Server VM Temurin-11.0.12+7 (build 11.0.12+7, mixed mode)
+
+
+To check that FastQC was installed correctly, navigate to C:\Program Files\FastQC and double click on "run_fastqc.bat". A Command Prompt window will automatically open but you can ignore it and close it once you are done with FastQC. FastQC should also open
+Work through the following steps to use FastQC in its interactive mode:
+
+1. Navigate to C:\Program Files\FastQC and double click on "run_fastqc.bat". A Command Prompt window will automatically open but you can ignore it and close it once you are done with FastQC. FastQC should also open
+2. Click "File" and "Open..."
+3. Navigate to the folder containing the .fastqc.gz files you would like to analyze
+4. Select all .fastqc.gz files of interest and click "Open"
+5. There will be a tab for each file and each will be analyzed
+6. As each file's analysis is done, click "File" and "Save report..."
+7. Navigate to the folder FASTQC in your RStudio project Saccharomyces
+8. Click "Save"
+9. Steps 5-7 will need to be repeated for each file
+10. After manually saving all of the FastQC reports, you can edit the readMapping.sh in Sublime Text 3 or any text editor to comment out the fastqc command
+
+```{zsh, eval=FALSE, engine="sh"}
+
+fastqc *.gz -t 4 -o ../FASTQC
+
+```
+
+so that it is ignored but the rest of the script will run. MultiQC will be able to find your FastQC reports if you saved them to the correct folder
+
+**Files for shell-genomics**
+
+Setup: Download files required for the lesson(https://figshare.com/articles/dataset/Data_Carpentry_Genomics_beta_2_0/7726454)
+
+Download the file called: shell_data.tar.gz and extract it into a directory call shell_data in your home folder (/Users/your username)
+
+**Files for wrangling-genomics**
+
+First make these directories in your home directory by typing
+
+```{zsh, eval=FALSE, engine="sh"}
+mkdir -p ~/dc_workshop/data/untrimmed_fastq
+```
+
+Then download these files into that directory:
+**macOS**
+```{zsh, eval=FALSE, engine="sh"}
+
+
+cd ~/dc_workshop/data/untrimmed_fastq
+curl -O ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR258/004/SRR2589044/SRR2589044_1.fastq.gz
+curl -O ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR258/004/SRR2589044/SRR2589044_2.fastq.gz
+curl -O ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR258/003/SRR2584863/SRR2584863_1.fastq.gz
+curl -O ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR258/003/SRR2584863/SRR2584863_2.fastq.gz
+curl -O ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR258/006/SRR2584866/SRR2584866_1.fastq.gz
+curl -O ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR258/006/SRR2584866/SRR2584866_2.fastq.gz
+
+```
+
+**Windows**
+```{zsh, eval=FALSE, engine="sh"}
+
+
+cd ~/dc_workshop/data/untrimmed_fastq
+wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR258/004/SRR2589044/SRR2589044_1.fastq.gz
+wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR258/004/SRR2589044/SRR2589044_2.fastq.gz
+wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR258/003/SRR2584863/SRR2584863_1.fastq.gz
+wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR258/003/SRR2584863/SRR2584863_2.fastq.gz
+wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR258/006/SRR2584866/SRR2584866_1.fastq.gz
+wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR258/006/SRR2584866/SRR2584866_2.fastq.gz
+
+```
+
+We will also download a set of trimmed FASTQ files to work with. These are small subsets of our real trimmed data, 
+and will enable us to run our variant calling workflow quite quickly. 
+
+I couldn't get this to work -- just download it manually by going to the site, then you can use the commands starting with mkdir -p after you've downloaded the sub.tar.gz file.
+**MacOS & Windows**
+```{zsh, eval=FALSE, engine="sh"}
+
+cd ~/dc_workshop
+curl L -o sub.tar.gz https://ndownloader.figshare.com/files/14418248
+
+mkdir -p /dc_workshop/data/trimmed_fastq_small 
+cd ~/dc_workshop/data/trimmed_fastq_small
+tar -xvf sub.tar.gz    
+mv -v sub/* ../trimmed_fastq_small
+
+```
+
+
+**Files for RNA-genomics**
+We are going to walk steps of a Next Generation Sequencing pipeline using samples from Saccharomyces cerevisiae because the file is nice and small.  
+
+For our examples we will focus on RNA-seq as it is the most manageable computationally as opposed to methylation, Chip-chip and DNA variant analysis. Its also, one of the more frequently used technologies in research, likely for this reason.
+
+Download the file called: shell_data.tar.gz and extract it into a directory call shell_data in your home folder (/Users/your-username/shell_data)
+
+The samples can be downloaded from the ENA:
+The [European Nucleotide Archive (EMBL-EBI)](http://www.ebi.ac.uk/ena>)
+
+For most reads presented by ENA, there are three kinds of file available:
+
+Submitted files are identical to those submitted by the user
+1. ENA submitted files are available in the ‘run’ directory
+2. FASTQ files are archive-generated files generated according to a standardised format (learn more about this format)
+3. SRA files are in a format designed to work with NCBI’s SRA Toolkit
+
+Each of the three file types has its own directory on the FTP server. A folder exists for every run, which is named with the accession of the run, e.g. files for run ERR164407 are in a directory named ERR164407. These run accession directories are organised into parent directories named with their first 6 characters. For ERR164407 this is ‘ERR164’. This structure is repeated across all three file types, e.g.
+
+ftp://ftp.sra.ebi.ac.uk/vol1/<file-ype>/ERR164/ERR164407
+
+It follows that the ftp addresses for our files are as listed below. We can download the files using the curl command. Options: -L, follows redirects, -O, write the outputto a file named as the remote file, -R, time the download. Make a FASTQ directory and then navigate there. You can copy and paste all of the curl lines in at once:
+
+```{zsh, eval=FALSE, engine="sh"}
+
+cd FASTQ
+curl -L -R -O ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458493/ERR458493.fastq.gz
+curl -L -R -O ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458494/ERR458494.fastq.gz
+curl -L -R -O ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458495/ERR458495.fastq.gz
+curl -L -R -O ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458500/ERR458500.fastq.gz
+curl -L -R -O ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458501/ERR458501.fastq.gz
+curl -L -R -O ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458502/ERR458502.fastq.gz
+```
+
+If you are on a PC, you need to use the wget command. For wget it would be, e.g.:
+
+wget https://ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458494/ERR458494.fastq.gz
+
+It follows that the ftp addresses for our files are as listed below. We can download the files using the curl command. Options: -L, follows redirects, -O, write the outputto a file named as the remote file, -R, time the download. Make a FASTQ directory and then navigate there.
+
+PC users need to download wget, if they haven't already:
+https://www.jcchouinard.com/wget/#Download_Wget_on_Windows
+
+Then You can copy and paste all of the wget lines in at once:
+```{zsh, eval=FALSE, engine="sh"}
+
+cd FASTQ
+wget https://ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458493/ERR458493.fastq.gz
+wget https://ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458494/ERR458494.fastq.gz
+wget https://ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458495/ERR458495.fastq.gz
+wget https://ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458500/ERR458500.fastq.gz
+wget https://ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458501/ERR458501.fastq.gz
+wget https://ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458502/ERR458502.fastq.gz
+
+```
+
+These files all take abovt 5' to download.
+
+The two other big files that you have are, first the DNA sequence, and second the GTF file, which is a file describing genomic features. You can get these from the ensembl database, which is the go to database for annotated genomes. Make a folder called r64 inside your FASTQ folder, them navigate there.
+
+**macOS**
+```{zsh, eval=FALSE, engine="sh"}
+
+cd ~/Documents/RProjects/genomics/rna-genomics/FASTQ
+
+curl -L -R -O ftp://ftp.ensembl.org/pub/release-96/fasta/saccharomyces_cerevisiae/dna/Saccharomyces_cerevisiae.R64-1-1.dna.toplevel.fa.gz
+
+curl -L -R -O ftp://ftp.ensembl.org/pub/release-96/gtf/saccharomyces_cerevisiae/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz
+
+
+```
+
+
+**Windows**
+```{zsh, eval=FALSE, engine="sh"}
+
+cd FASTQ/r64
+wget https://ftp.ensembl.org/pub/release-96/fasta/saccharomyces_cerevisiae/dna/Saccharomyces_cerevisiae.R64-1-1.dna.toplevel.fa.gz
+
+wget https://ftp.ensembl.org/pub/release-96/gtf/saccharomyces_cerevisiae/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz
+
+
+```
+
+
