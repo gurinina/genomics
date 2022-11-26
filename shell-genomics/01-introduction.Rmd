@@ -1,0 +1,269 @@
+# Introducing the Shell
+
+```{r include = FALSE}
+
+knitr::opts_chunk$set(
+  engine = list('zsh'),
+  engine.path = list('/bin/zsh'),
+  engine.opts = list(zsh = "-i")
+                      )
+
+```
+
+## What is a shell and why should I care?
+
+A *shell* is a computer program that presents a command line interface
+which allows you to control your computer using commands entered
+with a keyboard instead of controlling graphical user interfaces
+(GUIs) with a mouse/keyboard/touchscreen combination.
+
+There are many reasons to learn about the shell:
+
+* Many bioinformatics tools can only be used through a command line interface. Many more have features and parameter options which are not available in the GUI. BLAST is an example. Many of the advanced functions are only accessible to users who know how to use a shell.  
+
+* The shell makes your work less boring. In bioinformatics you often need to repeat tasks with a large number of files. With the shell, you can automate those repetitive tasks and leave you free to do more exciting things.  
+
+* The shell makes your work less error-prone. When humans do the same thing a hundred different times
+(or even ten times), they're likely to make a mistake. Your computer can do the same thing a thousand times
+with no mistakes.  
+
+* The shell makes your work more reproducible. When you carry out your work in the command-line 
+(rather than a GUI), your computer keeps a record of every step that you've carried out, which you can use 
+to re-do your work when you need to. It also gives you a way to communicate unambiguously what you've done, 
+so that others can inspect or apply your process to new data.  
+
+* Many bioinformatic tasks require large amounts of computing power and can't realistically be run on your
+own machine. These tasks are best performed using remote computers or cloud computing, which can only be accessed
+through a shell.
+
+In this lesson you will learn how to use the command line interface to move around in your file system. 
+
+## How to access the shell
+
+On a Mac or Linux machine, you can access a shell through a program called "Terminal", which is already available
+on your computer. The Terminal is a window into which we will type commands. If you're using Windows, you'll need to download a separate program to access the shell.
+
+## Navigating your file system
+
+The part of the operating system that manages files and directories
+is called the **file system**.
+It organizes our data into files,
+which hold information,
+and directories (also called "folders"),
+which hold files or other directories.
+
+Several commands are frequently used to create, inspect, rename, and delete files and directories.
+
+## Tip
+Hot-key combinations are shortcuts for performing common commands.
+The hot-key combination for clearing the console is `Ctrl+L`. Feel free to try it and see for yourself.
+
+
+Let's find out where we are by running a command called `pwd`
+(which stands for "print working directory").
+At any moment, our **current working directory**
+is our current default directory,
+i.e.,
+the directory that the computer assumes we want to run commands in,
+unless we explicitly specify something else.
+Here,
+the computer's response is `/Users/your-username`,
+which is the top level directory within our cloud system:
+
+
+
+```{zsh, engine.opts="-i"}
+
+ cd
+ pwd
+ 
+```
+
+Let's look at how our file system is organized. We can see what files and subdirectories are in this directory by running `ls`,
+which stands for "listing":
+
+
+
+```{zsh, engine.opts="-i"}
+
+ ls
+ 
+```
+
+`ls` prints the names of the files and directories in the current directory in
+alphabetical order,
+arranged neatly into columns. 
+We'll be working within the `~/shell_data` subdirectory, and creating new subdirectories, throughout this workshop.  
+
+The command to change locations in our file system is `cd`, followed by a
+directory name to change our working directory.
+`cd` stands for "change directory".
+
+Let's say we want to navigate to the `shell_data` directory we saw above.  We can
+use the following command to get there:
+
+
+```{zsh, engine.opts="-i"}
+
+cd ~/shell_data
+
+```
+
+
+Let's look at what is in this directory:
+
+
+```{zsh, engine.opts="-i"}
+
+cd ~/shell_data
+ls 
+```
+
+
+We can make the `ls` output more comprehensible by using the **flag** `-F`,
+which tells `ls` to add a trailing `/` to the names of directories:
+
+```{zsh, engine.opts="-i"}
+
+cd ~/shell_data
+ls -F
+ 
+```
+
+Anything with a "/" after it is a directory. Things with a "*" after them are programs. If
+there are no decorations, it's a file.
+
+`ls` has lots of other options. To find out what they are, we can type:
+
+
+```{zsh, engine.opts="-i"}
+
+ man ls
+ 
+```
+`man` (short for manual) displays detailed documentation (also referred as man page or man file)
+for `zsh` commands. It is a powerful resource to explore `zsh` commands, understand
+their usage and flags. Some manual files are very long. You can scroll through the
+file using your keyboard's down arrow or use the Space or f key to go forward one page
+and the b key to go backwards one page. When you are done reading, hit the q key
+to quit.
+
+Navigating the manual:
+Space or f or Control ⌃-f to advance one page
+d or Control ⌃-d to advance half a page
+b or Control ⌃-b to go back one page
+u or Control ⌃-u to go back half a page
+
+## Challenge
+Use the `-l` option for the `ls` command to display more information for each item 
+in the directory. What is one piece of additional information this long format
+gives you that you don't see with the bare `ls` command?
+
+## Solution
+
+```{zsh, engine.opts="-i"}
+
+cd ~/shell_data
+ls -l
+ 
+```
+
+
+
+No one can possibly learn all of these arguments, that's what the manual page
+is for. You can (and should) refer to the manual page or other help files
+as needed.
+
+Let's go into the `untrimmed_fastq` directory and see what is in there.
+```{zsh, engine.opts="-i"}
+
+cd ~/shell_data/untrimmed_fastq
+ls -F
+ 
+```
+
+This directory contains two files with `.fastq` extensions. FASTQ is a format
+for storing information about sequencing reads and their quality.
+We will be learning more about FASTQ files in a later lesson.
+
+### Shortcut: Tab Completion
+
+Typing out file or directory names can waste a
+lot of time and it's easy to make typing mistakes. Instead we can use tab complete 
+as a shortcut. When you start typing out the name of a directory or file, then
+hit the <kbdTab</kbdkey, the shell will try to fill in the rest of the
+directory or file name.
+
+Return to your home directory:
+
+```{zsh, engine.opts="-i"}
+ 
+cd ~
+
+```
+
+then enter:
+
+```{zsh, eval=FALSE, engine="sh"}
+
+cd sh<kbdTab</kbdkey
+ 
+```
+
+The shell will fill in the rest of the directory name for `shell_data`.
+
+Now change directories to `untrimmed_fastq` in `shell_data`
+
+```{zsh, engine.opts="-i"}
+
+cd ~/shell_data
+cd untrimmed_fastq
+ 
+```
+
+Using tab complete can be very helpful. However, it will only autocomplete
+a file or directory name if you've typed enough characters to provide
+a unique identifier for the file or directory you are trying to access.
+
+For example, if we now try to list the files which names start with `SR`
+by using tab complete:  
+
+```{zsh, eval=FALSE, engine="sh"}
+
+cd ~/shell_data
+cd untrimmed_fastq
+ls SR<tab
+ 
+```
+
+The shell auto-completes your command to `SRR09`, because all file names in 
+the directory begin with this prefix. When you hit
+<kbdTab</kbd again, the shell will list the possible choices.
+
+```{zsh, eval=FALSE, engine="sh"}
+
+ls SRR258<tab<tab
+ 
+```
+
+Tab completion can also fill in the names of programs, which can be useful if you
+remember the beginning of a program name.
+
+```{zsh, eval=FALSE, engine="sh"}
+
+pw<tab<tab
+
+```
+
+Displays the name of every program that starts with `pw`. 
+
+## Summary
+
+We now know how to move around our file system using the command line.
+This gives us an advantage over interacting with the file system through
+a GUI as it allows us to work on a remote server, carry out the same set of operations 
+on a large number of files quickly, and opens up many opportunities for using 
+bioinformatic software that is only available in command line versions. 
+
+In the next few episodes, we'll be expanding on these skills and seeing how 
+using the command line shell enables us to make our workflow more efficient and reproducible.
