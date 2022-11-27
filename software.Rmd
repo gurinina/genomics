@@ -9,7 +9,7 @@ knitr::opts_chunk$set(
                       )
 
 ```
-**Note: When I'm not running these commands, I'm setting the chunk to `zsh, eval=FALSE, engine="sh"`, you need to reset them to `zsh` or `zsh engine.opts='-i'` if you want them to run. I would suggest you copy and paste them into your  terminal though and not run them all at once so you can carefully monitor what is happening. Running bash in Rmarkdown also doesn't work well -- chunks do not communicate with eachother -- so one chunk will have no memory of something that was done in another chunk, and you have to reset your working directory for every chunk. It's also much slower. For these reasons it is better to copy paste into your terminal.**
+**Note: When I'm not running these commands, I'm setting the chunk to `zsh, eval=FALSE, engine="sh"`, you need to reset them to `zsh` or `zsh engine.opts='-i'` if you want them to run. I would strongly suggest you copy and paste them into your  terminal though and not run them all at once so you can carefully monitor what is happening. Running bash in Rmarkdown also doesn't work well -- chunks do not communicate with eachother -- so one chunk will have no memory of something that was done in another chunk, and you have to reset your working directory for every chunk. It's also much slower. For these reasons it is better to copy paste into your terminal.**
 
 **Conda for bioinformatics**
 This document accompanies the DIYtranscriptomics course and is intended to provide basic guidance in the installation of various bioinformatics softwares using Conda.  If you have problems...don't worry, we're here to help.
@@ -26,7 +26,7 @@ Rinse and repeat
 Install other software we'll use for the course
 Useful Conda tips
 Generally useful Conda commands
-Don't get carried away with your 'base' conda environment
+Don't get carried away with your 'base' Conda environment
 Backup plan if Conda doesn't work for you
 Plan B for Mac OS
 Plan B for Windows OS
@@ -87,7 +87,7 @@ source $HOME/miniconda3/bin/activate
 ```
 
 **For mac m1 users:**
-You may need to activate conda EVERY time you use conda. You do that like this:
+You may need to activate Conda EVERY time you use Conda. You do that like this:
 
 ```{zsh, eval=FALSE, engine="sh"}
 
@@ -117,7 +117,7 @@ You only need to do this once.
 
 
 **Windows OS**
-We will first install Miniconda and then add three new locations to your system environment path for conda to be recognized as a command in your Command Prompt. 
+We will first install Miniconda and then add three new locations to your system environment path for Conda to be recognized as a command in your Command Prompt. 
 
 Download the Miniconda executable (.exe) from [here](https://docs.conda.io/en/latest/miniconda.html) and double click the .exe to run the setup guide
 Click "Next >" to continue
@@ -151,7 +151,7 @@ If nothing shows up, when you type conda info then you'll have to, like me, type
 source $HOME/miniconda3/bin/activate
 ```
 
-every time you want to use conda, 
+every time you want to use Conda, 
 or source $HOME/miniconda3-intel/bin/activate if you set yourself up that way on a **Mac m1** per earlier instructions.
 
 One of the things that makes Conda so great for software installation is that it has access to various channels where many pre-packaged bioinformatics programs can be downloaded with all their dependencies.  Let's configure our Conda installation now so that it knows which channels to look for.
@@ -167,9 +167,9 @@ conda config --set offline false
 ```
 
 **Create your first Conda environment**
-Some of the most basic pieces of command-line software we discuss and use at the beginning of course aren't available in R/bioconductor.  Instead, we'll install these into a single 'environment' using Conda, which makes managing dependencies much less frustrating.  We'll be using Conda to install Subread, fastqc, and MultiQC.
+Some of the most basic pieces of command-line software we discuss and use at the beginning of course aren't available in R/bioconductor.  Instead, we'll install these into an 'environment' using Conda, which makes managing dependencies much less frustrating.  We'll be using Conda to install Subread, fastqc, and MultiQC and others.
 
-Begin by creating an empty environment called 'rnaseq'...or name it whatever you'd like
+Begin by creating an empty environment called 'rnaseq':
 
 
 ```{zsh, eval=FALSE, engine="sh"}
@@ -215,7 +215,7 @@ subread-align -v
 
 ```
 
-But windows version is not present in any of the conda channels. So, you need to follow these steps:
+But windows version is not present in any of the Conda channels. So, you need to follow these steps:
 a.	download the “ /subread-2.0.3/subread-2.0.3-Windows-x86_64.tar.gz” manually from https://sourceforge.net/projects/subread/files/subread-2.0.3/ 
 b.	unpack the package using any zip programs you have on your computer (e.g. 7-zip).
 c.	Copy the package to C:/Users/your-name/miniconda3/pkgs/ and the bin content to rnaseq env (as this is the first software you are installing you  may need to generate the bin folder in rnaseq directory).
@@ -224,7 +224,7 @@ e.	Restart the prompt.
 
 If your Subread installation worked, then you should see something in your terminal that resembles the output below (basically, Subread is saying "I'm here, now what would you like me to do?!").  If so, take a second to pat yourself on the back – you just installed your first piece of software using Conda! 🎉 🎊
 
-Note: if you are using Windows and the subread installation using conda was unsuccessful, follow the instructions in the Plan B for Windows OS section.
+Note: if you are using Windows and the subread installation using Conda was unsuccessful, follow the instructions in the Plan B for Windows OS section.
 
 
 **Rinse and repeat**
@@ -259,7 +259,7 @@ conda deactivate
 ```
 
 
-On windows, samtools doesn't have a PC version, so instead you can install Rsamtools in R.
+On Windows, samtools doesn't have a PC version, so instead you can install Rsamtools in R.
 
 
 Note: if your laptop runs Windows, you may encounter some issues with fastqc.  It should install without issue but fastqc may not be recognized as an internal or external command, operable program or batch file.  If so, no worries, it won't affect your ability to participate in the course.  However, you may want to try installing a similar program for quality control analysis of raw reads, called fastp.  You can install fastp using conda install -c bioconda fastp. Another alternative is to install FastQC manually and use it in its interactive mode. Instructions for this can be found in the Plan B for Windows OS section.
@@ -269,7 +269,7 @@ Note: if your laptop runs Windows, you may encounter some issues with fastqc.  I
 Check out [this](https://www.anaconda.com/blog/understanding-conda-and-pip) article for a nice breakdown of the between Conda and the package manager, Pip.
 
 **Generally useful Conda commands**
-if conda is not working try rerunning
+if Conda is not working try rerunning
 
 
 ```{zsh, eval=FALSE, engine="sh"}
@@ -284,9 +284,9 @@ conda search myenv #search your channels for a specific package called 'myenv'
 conda update --all #update conda
 nano $HOME/.condarc #view your list of channels 
 
-Don't get carried away with your 'base' conda environment
+Don't get carried away with your 'base' Conda environment
 
-When you install conda, you automatically get a 'base' environment.  In fact, you may find that when you open your terminal or shell application, that you are placed in the base env by default.  Avoid installing lots of software in base or, eventually, you will run into conflicts.
+When you install Conda, you automatically get a 'base' environment.  In fact, you may find that when you open your terminal or shell application, that you are placed in the base env by default.  Avoid installing lots of software in base or, eventually, you will run into conflicts.
 
 **Backup plan if Conda doesn't work for you**
 You should only be reading this if the steps above failed.  So, what do you do if Conda doesn't install properly or you aren't able to install the software above?  No worries, we can probably help. In the event that we can't resolve your IT issues, we have a backup plan to help you get the most essential software for the course installed.
@@ -420,7 +420,7 @@ mv -v sub/* data/trimmed_fastq_small
 rm -r sub
 ```
 
-I uploaded a file to canvas called `read_qc`. 
+I uploaded a file to canvas called `read_qc.sh`. 
 
 First make this directory by typing:
 

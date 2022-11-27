@@ -374,7 +374,7 @@ you have problems…don’t worry, we’re here to help.</p>
 Configuring your Conda installation Create your first Conda environment
 Rinse and repeat Install other software we’ll use for the course Useful
 Conda tips Generally useful Conda commands Don’t get carried away with
-your ‘base’ conda environment Backup plan if Conda doesn’t work for you
+your ‘base’ Conda environment Backup plan if Conda doesn’t work for you
 Plan B for Mac OS Plan B for Windows OS</p>
 <p><strong>What is Conda and why should you install it?</strong> Taken
 directly from the Conda manual:</p>
@@ -398,13 +398,8 @@ as part of that installation.</p>
 <p><strong>Mac OS</strong> Download the script on this <a href="https://docs.conda.io/en/latest/miniconda.html">page</a> for your
 operating system</p>
 <p><strong>For mac m1 users:</strong>: if you have a mac m1 chip, do not
-install the arm64 shell script, use the MacOSX-x86_64.sh one. Then when
-the software asks you where you want to install it, instead of your home
-directory/miniconda3 install it into your home
-directory/miniconda3-intel so you remember you are installing the intel
-version in case you also want to install the arm64 version later (but
-you won’t need it for this class). You will have to firts install
-Rosetta 2 if you don’t have it: (see below)**</p>
+install the arm64 shell script, use the MacOSX-x86_64.sh one. You will
+have to first install Rosetta 2 if you don’t have it: (see below)**</p>
 <pre class="zsh"><code>
 softwareupdate --install-rosetta
 </code></pre>
@@ -413,21 +408,14 @@ softwareupdate --install-rosetta
 application.</p>
 <p>Install this version even if you have an m1 mac:</p>
 <pre class="zsh"><code>
-
-curl -O https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh
-bash Miniconda3-latest-MacOSX-x86_64.sh -b -p $HOME/
-</code></pre>
-<p><strong>Note: for mac m1 users</strong></p>
-<p>Install this version even if you have an m1 mac:</p>
-<pre class="zsh"><code>
-
+cd ~
 curl -O https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh
 sh Miniconda3-latest-MacOSX-x86_64.sh
 </code></pre>
 <p>When the program says Miniconda3 will now be install into this
-location:, say /Users/yourusername/miniconda3</p>
+location:, /Users/your-username/miniconda3 say yes or</p>
 <p>specify a different location and type:
-/Users/your-username/miniconda3-intel</p>
+/Users/your-username/miniconda3</p>
 <p>This will bring you through the install process When it asks if you
 want to initialize conda, say no. When it is done, type:</p>
 <pre class="zsh"><code>
@@ -438,29 +426,25 @@ line regardless of which directory you’re in</p>
 <pre class="zsh"><code>
 source $HOME/miniconda3/bin/activate
 </code></pre>
-<p><strong>For mac m1 users:</strong> You need to switch to to the intel
-architecture to activate. You need to do that everytime you use conda.
-You do that like this:</p>
+<p><strong>For mac m1 users:</strong> You may need to activate Conda
+EVERY time you use Conda. You do that like this:</p>
 <pre class="zsh"><code>
 
-source $HOME/miniconda3-intel/bin/activate
+source $HOME/miniconda3/bin/activate
 </code></pre>
 <p>This next step may only be necessary if you’re running a newer MacOS
-that uses the zsh shell. <strong>I actually don’t think you need it, at
-least not on a mac m1 mac.</strong></p>
+that uses the zsh shell.</p>
 <pre class="zsh"><code>
 conda init zsh
 </code></pre>
+<p>If it says to restart your terminal for effects to take place, quit
+and restart your terminal.</p>
 <p>then type the following:</p>
 <pre class="zsh"><code>
 sudo ln -s $HOME/miniconda3/etc/profile.d/conda.sh </code></pre>
 <p>You only need to do this once.</p>
-<p><strong>For mac m1 users:</strong></p>
-<pre class="zsh"><code>
-sudo ln -s $HOME/miniconda3-intel/etc/profile.d/conda.sh
-</code></pre>
 <p><strong>Windows OS</strong> We will first install Miniconda and then
-add three new locations to your system environment path for conda to be
+add three new locations to your system environment path for Conda to be
 recognized as a command in your Command Prompt.</p>
 <p>Download the Miniconda executable (.exe) from <a href="https://docs.conda.io/en/latest/miniconda.html">here</a> and
 double click the .exe to run the setup guide Click “Next &gt;” to
@@ -484,15 +468,22 @@ close the “Environment Variables” window Click “OK” to close the “Syst
 Properties” window</p>
 <div id="configuring-your-conda-installation" class="section level2">
 <h2>Configuring your Conda installation</h2>
-<p>Now make sure Conda works and explore a bit using the lines below</p>
-<p>conda info #to view all the details about your conda set-up conda
-info –envs #to view all the environments available to you (note, since
-you just installed miniconda, you’ll only have a ‘base’ environment
-available) One of the things that makes Conda so great for software
-installation is that it has access to various channels where many
-pre-packaged bioinformatics programs can be downloaded with all their
-dependencies. Let’s configure our Conda installation now so that it
-knows which channels to look for.</p>
+<p>Now make sure Conda works and explore a bit using the lines below
+conda info #to view all the details about your conda set-up conda info
+–envs #to view all the environments available to you (note, since you
+just installed miniconda, you’ll only have a ‘base’ environment
+available)</p>
+<p><strong>Note</strong> If nothing shows up, when you type conda info
+then you’ll have to, like me, type in:</p>
+<pre class="zsh"><code>source $HOME/miniconda3/bin/activate</code></pre>
+<p>every time you want to use Conda, or source
+$HOME/miniconda3-intel/bin/activate if you set yourself up that way on a
+<strong>Mac m1</strong> per earlier instructions.</p>
+<p>One of the things that makes Conda so great for software installation
+is that it has access to various channels where many pre-packaged
+bioinformatics programs can be downloaded with all their dependencies.
+Let’s configure our Conda installation now so that it knows which
+channels to look for.</p>
 <pre class="zsh"><code>
 conda config --add channels defaults
 conda config --add channels bioconda
@@ -502,11 +493,10 @@ conda config --set offline false
 <p><strong>Create your first Conda environment</strong> Some of the most
 basic pieces of command-line software we discuss and use at the
 beginning of course aren’t available in R/bioconductor. Instead, we’ll
-install these into a single ‘environment’ using Conda, which makes
-managing dependencies much less frustrating. We’ll be using Conda to
-install Subread, fastqc, and MultiQC.</p>
-<p>Begin by creating an empty environment called ‘rnaseq’…or name it
-whatever you’d like</p>
+install these into an ‘environment’ using Conda, which makes managing
+dependencies much less frustrating. We’ll be using Conda to install
+Subread, fastqc, and MultiQC and others.</p>
+<p>Begin by creating an empty environment called ‘rnaseq’:</p>
 <pre class="zsh"><code>
 conda create --name rnaseq 
 </code></pre>
@@ -535,7 +525,7 @@ conda install -c bioconda subread
 
 subread-align -v
 </code></pre>
-<p>But windows version is not present in any of the conda channels. So,
+<p>But windows version is not present in any of the Conda channels. So,
 you need to follow these steps: a. download the “
 /subread-2.0.3/subread-2.0.3-Windows-x86_64.tar.gz” manually from <a href="https://sourceforge.net/projects/subread/files/subread-2.0.3/" class="uri">https://sourceforge.net/projects/subread/files/subread-2.0.3/</a>
 b. unpack the package using any zip programs you have on your computer
@@ -550,7 +540,7 @@ saying “I’m here, now what would you like me to do?!”). If so, take a
 second to pat yourself on the back – you just installed your first piece
 of software using Conda! 🎉 🎊</p>
 <p>Note: if you are using Windows and the subread installation using
-conda was unsuccessful, follow the instructions in the Plan B for
+Conda was unsuccessful, follow the instructions in the Plan B for
 Windows OS section.</p>
 <p><strong>Rinse and repeat</strong> Now that you have Subread
 installed, you’re going to install additional software into the same
@@ -558,20 +548,22 @@ installed, you’re going to install additional software into the same
 <pre class="zsh"><code>
 conda install -c bioconda fastqc 
 conda install -c bioconda multiqc
-conda install -c conda-forge -c bioconda samtools=1.11</code></pre>
+</code></pre>
 <p>Check that both installed correctly.</p>
 <p>When you are done type:</p>
 <pre class="zsh"><code>
 conda deactivate
 
 conda create --name variant
-conda install -c bioconda fastqc=0.11.7=5
-conda install -c bioconda trimmomatic=0.38=0
-conda install -c bioconda bwa=0.7.17=ha92aebf_3
-conda install -c bioconda bcftools=1.8=h4da6232_3
-conda install -c conda-forge -c bioconda samtools=1.11
+conda activate variant
+conda install -c bioconda fastqc
+conda install -c bioconda trimmomatic
+conda install -c bioconda bwa
+conda install -c bioconda bcftools
+conda install -c bioconda samtools
+conda deactivate
 </code></pre>
-<p>On windows, samtools doesn’t have a PC version, so instead you can
+<p>On Windows, samtools doesn’t have a PC version, so instead you can
 install Rsamtools in R.</p>
 <p>Note: if your laptop runs Windows, you may encounter some issues with
 fastqc. It should install without issue but fastqc may not be recognized
@@ -585,7 +577,7 @@ for this can be found in the Plan B for Windows OS section.</p>
 <p><strong>Useful Conda tips</strong> Check out <a href="https://www.anaconda.com/blog/understanding-conda-and-pip">this</a>
 article for a nice breakdown of the between Conda and the package
 manager, Pip.</p>
-<p><strong>Generally useful Conda commands</strong> if conda is not
+<p><strong>Generally useful Conda commands</strong> if Conda is not
 working try rerunning</p>
 <pre class="zsh"><code>
 source $HOME/miniconda3/bin/activate
@@ -595,8 +587,8 @@ environment conda remove –name myenv –all #remove any environment
 (substitute your env name for ‘myenv’) conda search myenv #search your
 channels for a specific package called ‘myenv’ conda update –all #update
 conda nano $HOME/.condarc #view your list of channels</p>
-<p>Don’t get carried away with your ‘base’ conda environment</p>
-<p>When you install conda, you automatically get a ‘base’ environment.
+<p>Don’t get carried away with your ‘base’ Conda environment</p>
+<p>When you install Conda, you automatically get a ‘base’ environment.
 In fact, you may find that when you open your terminal or shell
 application, that you are placed in the base env by default. Avoid
 installing lots of software in base or, eventually, you will run into
@@ -614,7 +606,7 @@ essential for the class, it will make your life a lot easier when you
 try to install software in future. To get Homebrew, enter the following
 line into your terminal.</p>
 <pre class="zsh"><code>
-/usr/bin/ruby -e &quot;$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)&quot;
+/bin/bash -c &quot;$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)&quot;
 </code></pre>
 <p>Some, but not all, of the software we installed using Conda above is
 also available for MacOS using Homebrew. Go ahead and install as
@@ -717,20 +709,21 @@ cd ~/dc_workshop
 curl L -o sub.tar.gz https://ndownloader.figshare.com/files/14418248
 
 mkdir -p /dc_workshop/data/trimmed_fastq_small 
-cd ~/dc_workshop/data/trimmed_fastq_small
+
 tar -xvf sub.tar.gz    
-mv -v sub/* ../trimmed_fastq_small
-</code></pre>
+mv -v sub/* data/trimmed_fastq_small
+rm -r sub</code></pre>
+<p>I uploaded a file to canvas called <code>read_qc.sh</code>.</p>
+<p>First make this directory by typing:</p>
+<pre class="zsh"><code>mkdir -p ~/dc_workshop/scripts</code></pre>
+<p>Then add the file to this directory.</p>
 <p><strong>Files for RNA-genomics</strong> We are going to walk steps of
 a Next Generation Sequencing pipeline using samples from Saccharomyces
-cerevisiae because the file is nice and small.</p>
+cerevisiae because the files are nice and small.</p>
 <p>For our examples we will focus on RNA-seq as it is the most
 manageable computationally as opposed to methylation, Chip-chip and DNA
 variant analysis. Its also, one of the more frequently used technologies
 in research, likely for this reason.</p>
-<p>Download the file called: shell_data.tar.gz and extract it into a
-directory call shell_data in your home folder
-(/Users/your-username/shell_data)</p>
 <p>The samples can be downloaded from the ENA: The <a href="http://www.ebi.ac.uk/ena%3E">European Nucleotide Archive
 (EMBL-EBI)</a></p>
 <p>For most reads presented by ENA, there are three kinds of file
@@ -750,8 +743,9 @@ This structure is repeated across all three file types, e.g.</p>
 <p>It follows that the ftp addresses for our files are as listed below.
 We can download the files using the curl command. Options: -L, follows
 redirects, -O, write the outputto a file named as the remote file, -R,
-time the download. Make a FASTQ directory and then navigate there. You
-can copy and paste all of the curl lines in at once:</p>
+time the download. Make a FASTQ directory in your RNA genomics folder
+and then navigate there. You can copy and paste all of the curl lines in
+at once, this will take about 7’ to download:</p>
 <pre class="zsh"><code>
 cd FASTQ
 curl -L -R -O ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458493/ERR458493.fastq.gz
@@ -778,7 +772,6 @@ wget https://ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458500/ERR458500.fastq.gz
 wget https://ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458501/ERR458501.fastq.gz
 wget https://ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458502/ERR458502.fastq.gz
 </code></pre>
-<p>These files all take abovt 5’ to download.</p>
 <p>The two other big files that you have are, first the DNA sequence,
 and second the GTF file, which is a file describing genomic features.
 You can get these from the ensembl database, which is the go to database
@@ -786,7 +779,7 @@ for annotated genomes. Make a folder called r64 inside your FASTQ
 folder, them navigate there.</p>
 <p><strong>macOS</strong></p>
 <pre class="zsh"><code>
-cd ~/Documents/RProjects/genomics/rna-genomics/FASTQ
+cd ~/Documents/RProjects/genomics/rna-genomics/FASTQ/r64
 
 curl -L -R -O ftp://ftp.ensembl.org/pub/release-96/fasta/saccharomyces_cerevisiae/dna/Saccharomyces_cerevisiae.R64-1-1.dna.toplevel.fa.gz
 
