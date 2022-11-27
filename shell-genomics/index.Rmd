@@ -1,5 +1,5 @@
 ---
-title: "shell-genomics"
+title: "Shell-genomics"
 author: "Guri Giaever"
 date: "`r Sys.Date()`"
 link-citations: yes

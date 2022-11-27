@@ -44,7 +44,7 @@ Conda comes in two flavors:  Anaconda and Miniconda.  We want to install Minicon
 **Mac OS**
 Download the script on this [page](https://docs.conda.io/en/latest/miniconda.html) for your operating system
 
-**For mac m1 users:**: if you have a mac m1 chip, do not install the arm64 shell script, use the MacOSX-x86_64.sh one. Then when the software asks you where you want to install it, instead of your home directory/miniconda3 install it into your home directory/miniconda3-intel so you remember you are installing the intel version in case you also want to install the arm64 version later (but you won't need it for this class). You will have to first install Rosetta 2 if you don't have it: (see below)**
+**For mac m1 users:**: if you have a mac m1 chip, do not install the arm64 shell script, use the MacOSX-x86_64.sh one. You will have to first install Rosetta 2 if you don't have it: (see below)**
 
 ```{zsh, eval=FALSE, engine="sh"}
 
@@ -57,26 +57,14 @@ Move this shell script (.sh) file to your home folder on your Mac ($HOME directo
 Install this version even if you have an m1 mac:
 ```{zsh, eval=FALSE, engine="sh"}
 
-
-curl -O https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh
-bash Miniconda3-latest-MacOSX-x86_64.sh -b -p $HOME/
-
-
-```
-
-**Note: for mac m1 users**
-
-Install this version even if you have an m1 mac:
-```{zsh, eval=FALSE, engine="sh"}
-
-
+cd ~
 curl -O https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh
 sh Miniconda3-latest-MacOSX-x86_64.sh
 
 
 ```
 
-When the program says Miniconda3 will now be install into this location:, say /Users/your-username/miniconda3 say yes or type
+When the program says Miniconda3 will now be install into this location:, /Users/your-username/miniconda3 say yes or 
 
 specify a different location and type: /Users/your-username/miniconda3
 
@@ -99,7 +87,7 @@ source $HOME/miniconda3/bin/activate
 ```
 
 **For mac m1 users:**
-You need to activate conda every time you use conda. You do that like this:
+You may need to activate conda EVERY time you use conda. You do that like this:
 
 ```{zsh, eval=FALSE, engine="sh"}
 
@@ -309,7 +297,7 @@ If you’re running a Mac OS, then it's a good idea to install Homebrew, which h
 
 ```{zsh, eval=FALSE, engine="sh"}
 
-/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
 ```
 
@@ -426,19 +414,26 @@ cd ~/dc_workshop
 curl L -o sub.tar.gz https://ndownloader.figshare.com/files/14418248
 
 mkdir -p /dc_workshop/data/trimmed_fastq_small 
-cd ~/dc_workshop/data/trimmed_fastq_small
-tar -xvf sub.tar.gz    
-mv -v sub/* ../trimmed_fastq_small
 
+tar -xvf sub.tar.gz    
+mv -v sub/* data/trimmed_fastq_small
+rm -r sub
 ```
 
+I uploaded a file to canvas called `read_qc`. 
+
+First make this directory by typing:
+
+```{zsh, eval=FALSE, engine="sh"}
+mkdir -p ~/dc_workshop/scripts
+```
+
+Then add the file to this directory.
 
 **Files for RNA-genomics**
-We are going to walk steps of a Next Generation Sequencing pipeline using samples from Saccharomyces cerevisiae because the file is nice and small.  
+We are going to walk steps of a Next Generation Sequencing pipeline using samples from Saccharomyces cerevisiae because the files are nice and small.
 
 For our examples we will focus on RNA-seq as it is the most manageable computationally as opposed to methylation, Chip-chip and DNA variant analysis. Its also, one of the more frequently used technologies in research, likely for this reason.
-
-Download the file called: shell_data.tar.gz and extract it into a directory call shell_data in your home folder (/Users/your-username/shell_data)
 
 The samples can be downloaded from the ENA:
 The [European Nucleotide Archive (EMBL-EBI)](http://www.ebi.ac.uk/ena>)
@@ -488,8 +483,6 @@ wget https://ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458501/ERR458501.fastq.gz
 wget https://ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458502/ERR458502.fastq.gz
 
 ```
-
-These files all take abovt 5' to download.
 
 The two other big files that you have are, first the DNA sequence, and second the GTF file, which is a file describing genomic features. You can get these from the ensembl database, which is the go to database for annotated genomes. Make a folder called r64 inside your FASTQ folder, them navigate there.
 

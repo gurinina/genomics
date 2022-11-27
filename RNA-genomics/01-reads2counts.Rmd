@@ -4,8 +4,11 @@
 
 library(knitr)
 
-knitr::opts_chunk$set(engine.opts = list(zsh = '/bin/zsh'))
-
+knitr::opts_chunk$set(
+  engine = list('zsh'),
+  engine.path = list('/bin/zsh'),
+  engine.opts = list(zsh = "-i")
+                      )
 ```
 
 This is just a reiteration of the files you should have already downloaded. So hopefully you have your files already in your FASTQ directory. So let's skip this part.
@@ -13,6 +16,7 @@ This is just a reiteration of the files you should have already downloaded. So h
 We are going to walk steps of a Next Generation Sequencing pipeline using samples from Saccharomyces cerevisiae because the files are nice and small.  Navigate to your FASTQ directory:
 
 ```{zsh, engine.opts="-i"}
+
 pwd
 cd ~
 pwd
@@ -75,7 +79,7 @@ wget ftp.sra.ebi.ac.uk/vol1/fastq/ERR458/ERR458502/ERR458502.fastq.gz
 
 ```
 
-These files take about 5' to download.
+These files take about 7' to download.
 
 The two other big files that you have are, first the DNA sequence, and second the GTF file, which is a file describing genomic features. You can get these from the ensembl database, which is the go to database for annotated genomes.
 
@@ -104,6 +108,7 @@ wget ftp://ftp.ensembl.org/pub/release-96/gtf/saccharomyces_cerevisiae/Saccharom
 
 
 ```
+
 ## Fastq files
 
 We've talked about and looked at fastq files a little bit, but let's look at them here in there raw format. First we have to unzip one. 
@@ -114,7 +119,7 @@ To unzip you use gunzip and you need the -c to leave the gz file behind:
 cd ~/Documents/RProjects/genomics/RNA-genomics
 
 gunzip -c FASTQ/ERR458493.fastq.gz > FASTQ/ERR458493.fastq
-head -n 8 FASTQ/ERR458493.fastq
+head -n 4 FASTQ/ERR458493.fastq
 
 ```
 First line: A sequence identifier with information about the sequencing run and the cluster. The exact contents of this line vary by based on the BCL to FASTQ conversion software used.
@@ -141,7 +146,7 @@ Use fastqc to check the quality of our fastq files, let's just look at one quick
 ```{zsh, engine.opts="-i"}
 
 cd ~/Documents/RProjects/genomics/RNA-genomics
-source $HOME/miniconda3-intel/bin/activate
+source $HOME/miniconda3/bin/activate
 conda activate rnaseq
 fastqc FASTQ/ERR458493.fastq.gz -t 4 -o FASTQC
 
@@ -208,7 +213,7 @@ Next, we want to build an index from our reference fasta file:
 ```{zsh, eval=FALSE, engine="sh"}
 
 cd ~/Documents/RProjects/genomics/RNA-genomics/FASTQ
-source $HOME/miniconda3-intel/bin/activate
+source $HOME/miniconda3/bin/activate
 conda activate rnaseq
 
 subread-buildindex -o r64/r64bread.index r64/Saccharomyces_cerevisiae.R64-1-1.dna.toplevel.fa.gz
@@ -401,7 +406,7 @@ The alignment command is as follows:
 ```{zsh, eval=FALSE, engine="sh"}
 
 cd ~/Documents/RProjects/genomics/RNA-genomics/FASTQ
-source $HOME/miniconda3-intel/bin/activate
+source $HOME/miniconda3/bin/activate
 conda activate rnaseq
 
 subread-align --sortReadsByCoordinates -a r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -B 3 -T 16 -i r64/r64bread.index -t 0 -r ERR458493.fastq.gz -o ../BAM/res458493.bam &> ../BAM/R493.log
@@ -415,7 +420,7 @@ Finally, to create the count matrix we use featureCounts. The command is the fol
 ```{zsh, eval=FALSE, engine="sh"}
 
 cd ~/Documents/RProjects/genomics/RNA-genomics/FASTQ
-source $HOME/miniconda3-intel/bin/activate
+source $HOME/miniconda3/bin/activate
 conda activate rnaseq
 
 featureCounts -O -t gene -g gene_id -a r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -o ../counts.txt ../BAM/*.bam
@@ -424,7 +429,7 @@ featureCounts -O -t gene -g gene_id -a r64/Saccharomyces_cerevisiae.R64-1-1.96.g
 
 
 
-We can run all of these commands by creating a shell script. You should find this script in your FASTQ directory called "subreadMapping.sh". Let's have a look at it. To run this 'shell script' you will need to open your terminal. Navigate to the FASTQ directory by typing cd FASTQ. You need to change permissions on your computer so that you can run a shell script by typing: 'chmod 777 subreadMapping.sh' (without the quotes) at the terminal prompt. Then type './subreadMapping.sh' (without the quotes) at the prompt after activating conda rnaseq. This will run fastqc, the indexing, the alignment, and multiqc. Then you're done! A file called 'counts.txt' should appear in your FASTQ directory.
+We can run all of these commands by creating a shell script. You should find this script in your RNA-genomics directory called "subreadMapping.sh". Copy this file to the FASTQ directory. Let's have a look at it. To run this 'shell script' you will need to open your terminal. Navigate to the FASTQ directory by typing cd ~/Documents/RProjects/genomics/RNA-genomics/FASTQ. You need to change permissions on your computer so that you can run a shell script by typing: 'chmod 777 subreadMapping.sh' (without the quotes) at the terminal prompt. Then type './subreadMapping.sh' or 'sh subreadMapping.sh' (without the quotes) at the prompt. This will run fastqc, the indexing, the alignment, and multiqc. Then you're done! A file called 'counts.txt' should appear in your RNA-genomics directory.
 
 Let's try running it now. 
 
@@ -434,8 +439,7 @@ cd ~/Documents/RProjects/genomics/RNA-genomics/FASTQ
 
 
 chmod 777 subreadMapping.sh
-source $HOME/miniconda3-intel/bin/activate
-conda activate rnaseq
+
 
 sh subreadMapping.sh
 

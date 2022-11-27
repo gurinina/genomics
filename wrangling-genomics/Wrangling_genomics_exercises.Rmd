@@ -1,0 +1,208 @@
+---
+title: "wrangling-genomics exercises"
+output: html_document
+date: "2022-10-20"
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(
+  engine = list('zsh'),
+  engine.path = list('/bin/zsh'),
+  engine.opts = list(zsh = "-i")
+                      )
+
+
+```
+## 01-background
+
+## Challenge
+
+Based on the metadata, can you answer the following questions?
+
+1. How many different generations exist in the data?
+2. How many rows and how many columns are in this data?
+3. How many citrate+ mutants have been recorded in **Ara-3**?
+4. How many hypermutable mutants have been recorded in **Ara-3**?
+
+## Solution
+
+
+
+
+## 02-quality-control
+
+What is the last read in the `SRR2584863_1.fastq ` file? How confident are you in this read?
+
+## Solution
+
+```{zsh, engine.opts="-i"}
+
+```
+
+
+
+
+## Exercise
+
+How big are the files?
+(Hint: Look at the options for the `ls` command to see how to show
+file sizes.)
+
+## Solution
+
+```{zsh, engine.opts="-i"}
+
+```
+
+
+## Exercise
+
+Discuss your results with a neighbor. Which sample(s) looks the best
+in terms of per base sequence quality? Which sample(s) look the
+worst?
+
+## Solution
+
+## Exercise
+
+Which samples failed at least one of FastQC's quality tests? What
+test(s) did those samples fail?
+
+## Solution
+
+
+```{zsh, engine.opts="-i"}
+
+```
+
+## 03-trimming
+
+## Exercise
+
+Use the output from your Trimmomatic command to answer the
+following questions.
+
+1) What percent of reads did we discard from our sample?
+2) What percent of reads did we keep both pairs?
+
+## Solution
+
+
+
+
+## Exercise
+We trimmed our fastq files with Nextera adapters, 
+but there are other adapters that are commonly used.
+What other adapter files came with Trimmomatic?
+
+## Solution
+
+```{zsh, engine.opts="-i"}
+
+
+
+```
+
+## Bonus exercise (advanced)
+
+Now that our samples have gone through quality control, they should perform
+better on the quality tests run by FastQC. Go ahead and re-run
+FastQC on your trimmed FASTQ files and visualize the HTML files
+to see whether your per base sequence quality is higher after
+trimming. Save the HTML files in ~/Desktop/fastqc_html/trimmed, 
+then take a look at the html files in your browser.
+
+## Solution
+
+In your terminal window do:
+
+
+```{zsh, engine.opts="-i"}
+
+
+```
+
+In a new tab in your terminal do:
+
+```{zsh, engine.opts="-i"}
+
+```
+
+## 04-variant-calling
+
+## Exercise 
+
+We saved this file as `data/ref_genome/ecoli_rel606.fasta.gz` and then decompressed it. 
+What is the real name of the genome? 
+
+## Solution
+
+```{zsh, engine.opts="-i"}
+
+
+```
+
+
+
+## Exercise
+
+Use the `grep` and `wc` commands you have learned to assess how many variants are in the vcf file. 
+
+## Solution
+
+
+```{zsh, engine.opts="-i"}
+
+
+```
+
+
+## Exercise 
+
+Visualize the alignment of the reads for our `SRR2584866` sample. What variant is present at 
+position 4377265? What is the canonical nucleotide in that position? 
+
+## Solution
+
+
+```{zsh, eval=FALSE, engine="sh"}
+
+
+```
+
+
+## 05-automation
+
+## Exercise
+
+The samples we just performed variant calling on are part of the long-term evolution experiment introduced at the 
+beginning of our variant calling workflow. From the metadata table, we know that SRR2589044 was from generation 5000,
+SRR2584863 was from generation 15000, and SRR2584866 was from generation 50000. How did the number of mutations per sample change
+over time? Examine the metadata table. What is one reason the number of mutations may have changed the way they did?
+
+
+## Solution
+
+
+```{zsh, engine.opts="-i"}
+
+
+
+```
+
+For SRR2589044 from generation 5000 there were 10 mutations, for SRR2584863 from generation 15000 there were 27 mutations, 
+and SRR2584866 from generation 793 mutations. In the last generation, a hypermutable phenotype had evolved, causing this
+strain to have more mutations. 
+
+## Bonus exercise
+
+If you have time after completing the previous exercise, use `run_variant_calling.sh` to run the variant calling pipeline 
+on the full-sized trimmed FASTQ files. Does the number of variants change per sample?
+
+## Solution
+ 
+
+
+
+

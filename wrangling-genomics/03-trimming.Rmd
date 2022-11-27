@@ -128,10 +128,11 @@ We are going to run Trimmomatic on one of our paired-end samples.
 While using FastQC we saw that Nextera adapters were present in our samples. 
 The adapter sequences came with the installation of trimmomatic, so we will first copy these sequences into our current directory.
 
+**Note** You might have to change your path here, check your version and folders for this file:
 ```{zsh, engine.opts="-i"}
 
 cd ~/dc_workshop/data/untrimmed_fastq/
-cp -R ~/miniconda3/pkgs/trimmomatic-0.36-6/share/trimmomatic-0.36-6/adapters/NexteraPE-PE.fa ~/dc_workshop/data/untrimmed_fastq/
+cp -R ~/miniconda3/pkgs/trimmomatic-0.39-hdfd78af_2/share/trimmomatic-0.39-2/adapters/NexteraPE-PE.fa ~/dc_workshop/data/untrimmed_fastq/
 
 ```
 
@@ -191,17 +192,14 @@ cd ~/dc_workshop/data/untrimmed_fastq/
 ls -lh SRR2584863* 
 gunzip -f -dk SRR2584863_1.trim.fastq.gz
 gunzip -f -dk SRR2584863_2.trim.fastq.gz
-gunzip -f -dk SRR2584863_1.fastq.gz
-gunzip -f -dk SRR2584863_2.fastq.gz
 ls -lh SRR2584863* 
 
 ```
 
 
-Let's look at how much trimming occured on our SRR2584863_1.trim.fastq.gz
-SRR2584863_2.trim.fastq.gz files. 426M and 383M, 134, , 131smaller than their
-original size of 545M. So it looks like more trimming occured for the 
-SRR2584863_2.trim.fastq.gz file, 472 427, 
+Let's look at how much trimming occured on our SRR2584863_1.trim.fastq & SRR2584863_2.trim.fastq files. 426M and 383M, 119M & 162M smaller than their
+original size of 545M. So it looks like more trimming occurred on the 
+SRR2584863_2.trim.fastq.gz file. Remember SRR2584863_2 failed the per base sequence quality report, so this makes sense.
 
 We have just successfully run Trimmomatic on one of our FASTQ files! 
 However, there is some bad news. Trimmomatic can only operate on
@@ -218,7 +216,7 @@ gzip -f SRR2584863_1.fastq
 
 ```
 
-```{zsh, eval=FALSE, engine="sh"}
+```{zsh, engine.opts="-i"}
 
 cd ~/dc_workshop/data/untrimmed_fastq/
 
@@ -262,7 +260,7 @@ to a new subdirectory within our `data/` directory.
 
 
 
-```{zsh, eval=FALSE, engine="sh"}
+```{zsh, engine.opts="-i"}
 
 cd ~/dc_workshop/data/untrimmed_fastq
 mkdir -p ../trimmed_fastq

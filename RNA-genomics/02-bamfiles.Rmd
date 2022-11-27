@@ -2,8 +2,11 @@
 
 ```{r setup, include = FALSE}
 
-knitr::opts_chunk$set(engine.opts = list(zsh = '/bin/zsh'))
-
+knitr::opts_chunk$set(
+  engine = list('zsh'),
+  engine.path = list('/bin/zsh'),
+  engine.opts = list(zsh = "-i")
+                      )
 ```
 
 ## Introduction
