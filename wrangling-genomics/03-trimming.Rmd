@@ -168,6 +168,8 @@ following questions.
 2) What percent of reads did we keep both pairs?
 
 ## Solution
+1) 0.23%
+2) 79.96%
 
 
 You may have noticed that Trimmomatic automatically detected the
