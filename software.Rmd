@@ -9,7 +9,7 @@ knitr::opts_chunk$set(
                       )
 
 ```
-**Note: When I'm not running these commands, I'm setting the chunk to `zsh, eval=FALSE, engine="sh"`, you need to reset them to `zsh` or `zsh engine.opts='-i'` if you want them to run. I would therefore suggest you copy and paste them into your  terminal though and not run them all at once so you can carefully monitor what is happening. Running bash in Rmarkdown also doesn't work well -- chunks do not communicate with eachother -- so one chunk will have no memory of something that was done in another chunk, and you have to reset your working directory for every chunk. It's also much slower. For these reasons it is better to copy paste into your terminal.**
+**Note: When I'm not running these commands, I'm setting the chunk to `zsh, eval=FALSE, engine="sh"`, you need to reset them to `zsh` or `zsh engine.opts='-i'` if you want them to run. I would suggest you copy and paste them into your  terminal though and not run them all at once so you can carefully monitor what is happening. Running bash in Rmarkdown also doesn't work well -- chunks do not communicate with eachother -- so one chunk will have no memory of something that was done in another chunk, and you have to reset your working directory for every chunk. It's also much slower. For these reasons it is better to copy paste into your terminal.**
 
 **Conda for bioinformatics**
 This document accompanies the DIYtranscriptomics course and is intended to provide basic guidance in the installation of various bioinformatics softwares using Conda.  If you have problems...don't worry, we're here to help.
