@@ -117,32 +117,26 @@ select(variants, -CHROM)
 select(variants, ends_with("B"))
 ```
 
-> ## Challenge
->
-> Create a table that contains all the columns with the letter "i" and column "POS",
-> without columns "Indiv" and "FILTER".
-> Hint: look at for a function called `contains()`, which can be found in the help documentation for ends with we just covered (`?ends_with`). Note that contains() is not case sensistive.
->
->> ## Solution
->>
->> ```{r}
->> # First, we select "POS" and all columns with letter "i". This will contain columns Indiv and FILTER. 
->> variants_subset <- select(variants, POS, contains("i"))
->> # Next, we remove columns Indiv and FILTER
->> variants_result <- select(variants_subset, -Indiv, -FILTER)
->> variants_result
->> ```
->
-> We can also get to `variants_result` in one line of code:
->
->> ## Alternative solution
->>
->> ```{r}
->> variants_result <- select(variants, POS, contains("i"), -Indiv, -FILTER)
->> variants_result
->> ```
-> {: .solution}
-{: .challenge}
+## Challenge 1
+
+Create a table that contains all the columns with the letter "i" and column "POS",
+without columns "Indiv" and "FILTER".
+Hint: look at for a function called `contains()`, which can be found in the help documentation for ends with we just covered (`?ends_with`). Note that contains() is not case sensistive.
+
+## Solution 1
+
+```{r}
+
+```
+
+We can also get to `variants_result` in one line of code:
+
+## Alternative solution 1
+
+```{r}
+
+```
+
 
 To choose rows, use `filter()`:
 
@@ -154,13 +148,13 @@ filter(variants, sample_id == "SRR2584863")
 
 ```{r}
 # rows for which the reference genome has T or G
-filter(variants, REF %in% c("T", "G"))
+filter(variants, REF %in% c("T", "G")) %>% dim()
 # rows with QUAL values greater than or equal to 100
-filter(variants, QUAL >= 100)
+filter(variants, QUAL >= 100)  %>% dim()
 # rows that have TRUE in the column INDEL
-filter(variants, INDEL)
+filter(variants, INDEL)  %>% dim()
 # rows that don't have missing data in the IDV column
-filter(variants, !is.na(IDV))
+filter(variants, !is.na(IDV))  %>% dim()
 ```
 
 `filter()` allows you to combine multiple conditions. You can separate them using a `,` as arguments to the function, they will be combined using the `&` (AND) logical operator. If you need to use the `|` (OR) logical operator, you can specify it explicitly:
@@ -173,19 +167,16 @@ filter(variants, sample_id == "SRR2584863", QUAL >= 100)
 filter(variants, sample_id == "SRR2584863", (INDEL | QUAL >= 100))
 ```
 
-> ## Challenge
->
-> Select all the mutations that occurred between the positions 1e6 (one million)
-> and 2e6 (included) that are not indels and have QUAL greater than 200.
->
->> ## Solution
->>
->> ```{r}
->> filter(variants, POS >= 1e6 & POS <= 2e6, !INDEL, QUAL > 200)
->> ```
-> {: .solution}
-{: .challenge}
+## Challenge 2
 
+Select all the mutations that occurred between the positions 1e6 (one million)
+and 2e6 (included) that are not indels and have QUAL greater than 200.
+
+## Solution
+
+```{r}
+
+```
 
 ### Pipes
 
@@ -245,22 +236,18 @@ SRR2584863_variants %>% slice(1:6)
 SRR2584863_variants %>% slice(10:25)
 ```
 
-> ## Exercise: Pipe and filter
->
-> Starting with the `variants` data frame, use pipes to subset the data
-> to include only observations from SRR2584863 sample,
-> where the filtered depth (DP) is at least 10.
-> Shwoing only 5th through 11th rows of columns `REF`, `ALT`, and `POS`.
->
->> ## Solution
->> ```{r}
->>  variants %>%
->>  filter(sample_id == "SRR2584863" & DP >= 10) %>%
->>  slice(5:11) %>%
->>  select(REF, ALT, POS)
->> ```
-> {: .solution}
-{: .challenge}
+## Exercise 1: Pipe and filter
+
+Starting with the `variants` data frame, use pipes to subset the data
+to include only observations from SRR2584863 sample,
+where the fi3ltered depth (DP) is at least 10.
+Shwoing only 5th through 11th rows of columns `REF`, `ALT`, and `POS`.
+
+## Solution Ex 1
+```{r}
+
+```
+
 
 ### Mutate
 
@@ -284,21 +271,18 @@ variants %>%
   mutate(POLPROB = 1 - (10 ^ -(QUAL/10)))
 ```
 
-> ## Exercise
-> There are a lot of columns in our dataset, so let's just look at the
-> `sample_id`, `POS`, `QUAL`, and `POLPROB` columns for now. Add a
-> line to the above code to only show those columns.
->
->> ## Solution
->>
->> ```{r}
->> variants %>%
->>  mutate(POLPROB = 1 - 10 ^ -(QUAL/10)) %>%
->>  select(sample_id, POS, QUAL, POLPROB)
->> ```
->>
-> {: .solution}
-{: .challenge}
+## Exercise 2
+There are a lot of columns in our dataset, so let's just look at the
+`sample_id`, `POS`, `QUAL`, and `POLPROB` columns for now. Add a
+line to the above code to only show those columns.
+
+## Solution Ex2
+
+```{r}
+
+```
+
+
 
 ### group_by() and  summarize() functions
 
@@ -322,7 +306,7 @@ It can be a bit tricky at first, but we can imagine physically splitting the dat
 frame by groups and applying a certain function to summarize the data.
 
 <center>
-<img src="../fig/split_apply_combine.png" alt="rstudio default session" style="width: 500px;"/>
+<img src="figures/split_apply_combine.png" alt="rstudio default session" style="width: 500px;"/>
 </center>
 ^[The figure was adapted from the Software Carpentry lesson, [R for Reproducible Scientific Analysis](https://swcarpentry.github.io/r-novice-gapminder/13-dplyr/)]
 
@@ -343,18 +327,17 @@ variants %>%
   count(ALT)
 ```
 
-> ## Challenge
->
-> * How many mutations are found in each sample?
->
->> ## Solution
->>
->> ```{r}
->> variants %>%
->>   count(sample_id)
->> ```
-> {: .solution}
-{: .challenge}
+## Challenge 3
+
+* How many mutations are found in each sample?
+
+## Solution 3
+
+```{r}
+variants %>%
+ count(sample_id)
+```
+
 
 We can also apply many other functions to individual columns to get other
 summary statistics. For example,we can use built-in functions like `mean()`,

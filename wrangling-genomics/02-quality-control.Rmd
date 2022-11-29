@@ -132,9 +132,11 @@ The numerical value assigned to each of these characters depends on the
 sequencing platform that generated the reads. The sequencing machine used to generate our data uses the standard Sanger quality PHRED score encoding, using Illumina version 1.8 onwards. Each character is assigned a quality score between 0 and 41 as shown in
 the chart below.
 
-Quality encoding: !"#$%&'()*+,-./0123456789:;<=?@ABCDEFGHIJ
-                   |         |         |         |         |
-Quality score:    01........11........21........31........41
+|Line|Description|
+|----|-----------|
+|Quality encoding:| !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJ|
+|                   |         |         |         |         ||
+|Quality score:    |01........11........21........31........41|
 
 Each quality score represents the probability that the corresponding nucleotide call is
 incorrect. This quality score is logarithmically based, so a quality score of 10 reflects a
@@ -297,7 +299,7 @@ Later in our workflow, we will use another program to filter out poor quality re
 FastQC has a number of features which can give you a quick impression of any problems your
 data may have, so you can take these issues into consideration before moving forward with your analyses. Rather than looking at quality scores for each individual read, FastQC looks at quality collectively across all reads within a sample. The image below shows one FastQC-generated plot that indicates a very high quality sample:
 
-<img src="img/bad_quality.png" alt = "**Bad per base sequence quality**" class="center">
+<img src="img/good_quality.png" alt = "**Good per base sequence quality**" class="center">
 
 The x-axis displays the base position in the read, and the y-axis shows quality scores. In this example, the sample contains reads that are 40 bp long. This is much shorter than the reads we are working with in our workflow. For each position, there is a box-and-whisker plot showing the distribution of quality scores for all reads at that position. The horizontal red line indicates the median quality score and the yellow box shows the 1st to
 3rd quartile range. This means that 50% of reads have a quality score that falls within the
