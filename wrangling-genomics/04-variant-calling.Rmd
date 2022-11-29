@@ -514,7 +514,7 @@ position 4377265? What is the canonical nucleotide in that position?
 
 **Solution**
 
-
+CP000819.1:4,377,255-4,377,375
 
 ### Viewing with IGV
 

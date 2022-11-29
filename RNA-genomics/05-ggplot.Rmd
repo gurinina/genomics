@@ -62,6 +62,7 @@ ggplot(data = <DATA>, mapping = aes(<MAPPINGS>)) +  <GEOM_FUNCTION>()
   the `data` argument
 
 ```{r, eval = FALSE, purl = FALSE}
+glimpse(surveys_complete)
 ggplot(data = surveys_complete)
 ```
 
@@ -162,6 +163,7 @@ library(hexbin)
 Then use the `geom_hex()` function:
 
 ```{r, eval = FALSE}
+library(hexbin)
 surveys_plot +
  geom_hex()
 ```
@@ -187,6 +189,9 @@ surveys_plot +
 ## What are the relative strengths and weaknesses of a hexagonal bin
 ## plot compared to a scatter plot?
 ```
+
+Hexagonal Binning is another way to manage the problem of having to many points that start to overlap, 'overplotting'. Hexagonal binning plots density, rather than points. Points are binned into gridded hexagons and distribution (the number of points per hexagon) is displayed using either the color or the area of the hexagons. Weaknesses compared to a scatterplot are when a hex bin is not an accurate representation of the density of points in a plot, for example if the data is discrete or sparse.
+
 
 ## Building your plots iteratively
 
@@ -235,12 +240,14 @@ ggplot(data = surveys_complete,
 
 
 ```{r scatter-challenge, echo = FALSE, eval = FALSE, purl = TRUE}
-### Challenge with scatter plot:
+## Challenge with scatter plot:
 ##
 ##  Use what you just learned to create a scatter plot of `weight`
 ## over `species_id` with the plot types showing in different colors.
 ## Is this a good way to show this type of data?
 ```
+
+No, because the data in the x-axis is compressed and uninformative. A boxplot would be better.
 
 ## Boxplot
 
@@ -273,6 +280,7 @@ a beanplot), where the shape (of the density of points) is drawn.
 
 - Replace the box plot with a violin plot; see `geom_violin()`.
 
+
 In many types of data, it is important to consider the *scale* of the
 observations.  For example, it may be worth changing the scale of the axis to
 better distribute the observations in the space of the plot.  Changing the scale
@@ -296,7 +304,7 @@ from integer to factor. Why does this change how R makes the graph?
 ```{r boxplot-challenge, eval = FALSE, purl = TRUE, echo = FALSE}
 ## Challenge with boxplots:
 ##  Start with the boxplot we created:
-ggplot(data = surveys_complete, mapping = aes(x = species_id, y = weight)) +
+g=ggplot(data = surveys_complete, mapping = aes(x = species_id, y = weight)) +
   geom_boxplot(alpha = 0) +
   geom_jitter(alpha = 0.3, color = "tomato")
 
@@ -314,7 +322,51 @@ ggplot(data = surveys_complete, mapping = aes(x = species_id, y = weight)) +
 
 ```
 
+Answers:
 
+1. Replace the box plot with a violin plot; see `geom_violin()`
+```{r}
+# 1.
+ggplot(data = surveys_complete, mapping = aes(x = species_id, y = weight)) +
+  geom_violin(alpha = 0) +
+  geom_jitter(alpha = 0.3, color = "tomato")
+```
+
+2. Represent weight on the log10 scale; see `scale_y_log10()`.
+```{r}
+# 2.
+ggplot(data = surveys_complete, mapping = aes(x = species_id, y = weight)) +
+  scale_y_log10()+
+  geom_boxplot(alpha = 0) +
+  geom_jitter(alpha = 0.3, color = "tomato")
+```
+
+3. Create boxplot for `hindfoot_length` overlaid on a jitter layer.
+```{r}
+# 3.
+ggplot(data = surveys_complete, mapping = aes(x = species_id, y = hindfoot_length)) +
+  scale_y_log10()+
+  geom_jitter(alpha = 0.3, color = "tomato")+
+  geom_boxplot(alpha = 0) 
+```
+4. Add color to the data points on your boxplot according to the
+plot from which the sample was taken (`plot_id`).
+*Hint:* Check the class for `plot_id`. Consider changing the class
+of `plot_id` from integer to factor. Why does this change how R
+makes the graph?
+```{r}
+# 4.
+ggplot(data = surveys_complete, mapping = aes(x = species_id, y = hindfoot_length,col=plot_id)) +
+  scale_y_log10()+
+  geom_jitter(alpha = 0.3)+
+  geom_boxplot(alpha = 0) 
+
+ggplot(data = surveys_complete, mapping = aes(x = species_id, y = hindfoot_length,col=factor(plot_id))) +
+  scale_y_log10()+
+  geom_jitter(alpha = 0.3)+
+  geom_boxplot(alpha = 0) 
+```
+Because plot_id is continuous and should be a factor.
 ## Plotting time series data
 
 Let's calculate number of counts per year for each genus. First we need
@@ -664,3 +716,28 @@ saved plot.
 ##  ggplot2 cheat sheet for inspiration:
 ##  https://www.rstudio.com/wp-content/uploads/2015/08/ggplot2-cheatsheet.pdf
 ```
+
+
+My contribution:
+```{r gg}
+ g<- ggplot(data = yearly_sex_counts,
+                  aes(x = year, y = n, color = sex)) +
+    geom_line() +
+    facet_wrap(vars(genus)) +
+    labs(title = "Observed genera through time",
+        x = "Year of observation",
+        y = "Number of individuals") +
+    theme_bw() +
+    theme(axis.text.x = element_text(colour = "grey20", size = 10, angle = 90,
+                                     hjust = 0.5, vjust = 0.5),
+          axis.text.y = element_text(colour = "grey20", size = 10),
+          text = element_text(size = 10),
+          legend.position = c(0.9,0.1), # c(0,0) bottom left, c(1,1) top-right.
+          legend.background = element_rect(fill = "white", colour = NA))
+    g <- g + theme(strip.background = element_rect(fill="dodgerblue"),
+        strip.text=element_text(color="white"))
+    
+    
+    g
+    
+    

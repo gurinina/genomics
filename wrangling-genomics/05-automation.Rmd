@@ -10,7 +10,7 @@ knitr::opts_chunk$set(
 
 ```
 
-# What is a shell script?
+## What is a shell script?
 
 You wrote a simple shell script in a [previous lesson](http://www.datacarpentry.org/shell-genomics/05-writing-scripts/) that we used to extract bad reads from our
 FASTQ files and put them into a new file. 
@@ -66,7 +66,7 @@ done
 
 Notice that in this `for` loop, we used two variables, `infile`, which was defined in the `for` statement, and `base`, which was created from the filename during each iteration of the loop.
 
-## Creating variables
+### Creating variables
 Within the Bash shell you can create variables at any time (as we did
 above, and during the 'for' loop lesson). Assign any name and the
 value using the assignment operator: '='. You can check the current
@@ -75,7 +75,7 @@ definition of your variable by typing into your script: echo $variable_name.
 
 In this lesson, we will use two shell scripts to automate the variant calling analysis: one for FastQC analysis (including creating our summary file), and a second for the remaining variant calling. To write a script to run our FastQC analysis, we will take each of the commands we entered to run FastQC and process the output files and put them into a single file with a `.sh` extension. The `.sh` is not essential, but serves as a reminder to ourselves and to the computer that this is a shell script.
 
-# Analyzing quality with FastQC
+## Analyzing quality with FastQC
 
 We will use the command `touch` to create a new file where we will write our shell script. We will create this script in a new
 directory called `scripts/`. Previously, we used
@@ -150,7 +150,7 @@ what we are doing.
 echo "Saving summary..."
 cat */summary.txt ~/dc_workshop/docs/fastqc_summaries.txt
 
-## Using `echo` statements
+### Using `echo` statements
 
 We have used `echo` statements to add progress statements to our script. Our script will print these statements
 as it is running and therefore we will be able to see how far our script has progressed.
@@ -211,7 +211,7 @@ our scripts. Go ahead and select `A` each time this message appears. It will app
 
 replace SRR2584866_fastqc/Icons/fastqc_icon.png? [y]es, [n]o, [A]ll, [N]one, [r]ename:
 
-# Automating the rest of our variant calling workflow
+## Automating the rest of our variant calling workflow
 
 We can extend these principles to the entire variant calling workflow. To do this, we will take all of the individual commands that we wrote before, put them into a single file, add variables so that the script knows to iterate through our input files and write to the appropriate output files. This is very similar to what we did with our `read_qc.sh` script, but will be a bit more complex.
 
@@ -359,7 +359,7 @@ We can use the `base` variable to access both the `base_1.fastq` and `base_2.fas
 
 ```{zsh, eval=FALSE, engine="sh"}
 
-#input fastq files
+# input fastq files
     fq1 = ~/dc_workshop/data/trimmed_fastq_small/${base}_1.trim.sub.fastq
     fq2 = ~/dc_workshop/data/trimmed_fastq_small/${base}_2.trim.sub.fastq
     
