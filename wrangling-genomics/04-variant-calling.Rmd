@@ -3,13 +3,26 @@
 ```{r, include = FALSE}
 
 knitr::opts_chunk$set(
-  engine = list('zsh'),
-  engine.path = list('/bin/zsh'),
+  engine = list(zsh = 'zsh'),
+  engine.path = list(zsh = '/bin/zsh'),
   engine.opts = list(zsh = "-i")
                       )
 
 ```
 
+
+```{r engine='R'}
+Sys.setenv(DCWORKSHOP='~/dc_workshop')
+```
+
+Now we write a `bash` code chunk:
+
+```{zsh, engine.opts="-i"}
+echo $DCWORKSHOP
+pwd
+cd $DCWORKSHOP
+pwd
+```
 We mentioned before that we are working with files from a long-term evolution study of an *E. coli* population (designated Ara-3). Now that we have looked at our data to make sure that it is high quality, and removed low-quality base calls, we can perform variant calling to see how the population changed over time. We care how this population changed relative to the original population, *E. coli* strain REL606. Therefore, we will align each of our samples to the *E. coli* REL606 reference genome, and see what differences exist in our reads versus the genome.
 
 ## Alignment to a reference genome
@@ -187,6 +200,28 @@ conda activate variant
 samtools view -S -b results/sam/SRR2584866.aligned.sam > results/bam/SRR2584866.aligned.bam
 
 ```
+
+**11 mandatory fields**
+```{r engine='R'}
+
+library(Rsamtools)
+f1 = "/Users/ggiaever/dc_workshop/results/bam/SRR2584866.aligned.bam"
+reads = scanBam(BamFile("/Users/ggiaever/dc_workshop/results/bam/SRR2584866.aligned.bam",yieldSize = 20))
+n = reads[[1]]
+names(n)
+nchar(n$seq)
+n$seq
+complement(n$seq)
+n$strand
+n$pos
+n$flag
+n$qname
+n$qwidth
+n$qual
+n$cigar
+
+```
+
 
 ### Sort BAM file by coordinates
 

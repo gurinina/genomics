@@ -157,7 +157,7 @@ as it is running and therefore we will be able to see how far our script has pro
 
 Your full shell script should now look like this:
 
-```{zsh, engine.opts="-i"}
+```{zsh, eval=FALSE, engine="sh"}
 
 cd ~/dc_workshop/scripts
 cat read_qc.sh
