@@ -162,7 +162,7 @@ We had to type `zsh` because we needed to tell the computer what program to use 
 
 First, let's look at the current permissions.
 
-```{zsh, engine.opts="-i"}
+```{zsh, eval=FALSE, engine="sh"}
 
 cd ~/shell_data/untrimmed_fastq
 
@@ -182,11 +182,11 @@ chmod +x bad-reads-script.sh
 
 Now let's look at the permissions again.
 
-```{zsh, engine.opts="-i"}
+```{zsh, engine.opts="-i", include=FALSE, echo = FALSE}
 
 cd ~/shell_data/untrimmed_fastq
 
-ls -l bad-reads-script.sh
+ls -lah bad-reads-script.sh
 ```
 
 Now we see that it says `-rwxr-xr-x`. The `x`'s that are there now tell us we can run it as a program. So, let's try it! We'll need to put `./` at the beginning so the computer knows to look here in this directory for the program.

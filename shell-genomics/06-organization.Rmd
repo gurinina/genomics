@@ -196,7 +196,7 @@ From the `nano` screen, you can use your cursor to navigate, type, and delete an
 Although `nano` is useful, it can be frustrating to edit documents, as you 
 can't use your mouse to navigate to the part of the document you would like to edit.
 Here are some useful keyboard shortcuts for moving around within a text document in 
-`nano`. You can find more information by typing <kbd>Ctrl</kbd>-<kbd>G</kbdwithin `nano`.
+`nano`. You can find more information by typing <kbd>Ctrl</kbd>-<kbd>G</kbd within `nano`.
 
 | key     | action |
 | ------- | ---------- |

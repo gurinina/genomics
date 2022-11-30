@@ -32,6 +32,4 @@ bookdown::pdf_book:
   toc_unnumbered: no
   toc_appendix: yes
   quote_footer: ["\\VA{", "}{}"]
-bookdown::epub_book:
-  dev: svglite
-  stylesheet: css/style.css 
+bookdown::epub_book: default
