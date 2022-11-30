@@ -222,7 +222,7 @@ n$cigar
 
 ```
 
-
+![The cigar tags: 7-11](img/cigar.png)
 ### Sort BAM file by coordinates
 
 Next we sort the BAM file using the `sort` command from `samtools`. `-o` tells the command where to write the output.

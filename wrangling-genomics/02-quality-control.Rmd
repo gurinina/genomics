@@ -130,11 +130,10 @@ The numerical value assigned to each of these characters depends on the
 sequencing platform that generated the reads. The sequencing machine used to generate our data uses the standard Sanger quality PHRED score encoding, using Illumina version 1.8 onwards. Each character is assigned a quality score between 0 and 41 as shown in
 the chart below.
 
-|Line|Description|
-|----|-----------|
+|Metric:          |Code:     |
+|-----------------|------------------------------------------|
 |Quality encoding:| !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJ|
-|                   |         |         |         |         ||
-|Quality score:    |01........11........21........31........41|
+|Quality score:    |01............11.............21.............31.............41|
 
 Each quality score represents the probability that the corresponding nucleotide call is
 incorrect. This quality score is logarithmically based, so a quality score of 10 reflects a
