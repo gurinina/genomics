@@ -11,9 +11,14 @@ knitr::opts_chunk$set(
                       )
 ```
 
-This is just a reiteration of the files you should have already downloaded. So hopefully you have your files already in your FASTQ directory. So let's skip this part.
+What follows is a reiteration of the files you should have already downloaded. So hopefully you have your files already in your FASTQ in RNA-genomics directory. 
 
-We are going to walk steps of a Next Generation Sequencing pipeline using samples from Saccharomyces cerevisiae because the files are nice and small.  Navigate to your FASTQ directory:
+<p align="center">
+  <img width="800" src="figures/04-workflow-overview.png" >
+</p>
+
+
+We are going to walk steps of a Next Generation Sequencing pipeline using samples from Saccharomyces cerevisiae because the files are nice and small. Both in R and in the terminal. Like we did with the variant analysis, RNA-seq starts with QC and specifically FASTQC. So since we already walked through that last time we are going to skip over this bit. Navigate to your FASTQ directory:
 
 ```{zsh, engine.opts="-i"}
 
@@ -24,9 +29,6 @@ cd ~/Documents/RProjects/genomics/RNA-genomics/FASTQ
 
 
 ```
-
-
-in your terminal.
 
 For our examples we will focus on RNA-seq as it is the most manageable computationally as opposed to methylation, Chip-chip and DNA variant analysis. Its also, probably for that reason, one of the more frequently used technologies in research, likely for this reasons.
 
@@ -135,7 +137,7 @@ We can count the number of lines
 
 cd ~/Documents/RProjects/genomics/RNA-genomics
 
-ls -lh
+
 expr $(cat FASTQ/ERR458493.fastq | wc -l) / 4
 
 ```
@@ -409,7 +411,9 @@ cd ~/Documents/RProjects/genomics/RNA-genomics/FASTQ
 source $HOME/miniconda3/bin/activate
 conda activate rnaseq
 
-subread-align --sortReadsByCoordinates -a r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -B 3 -T 16 -i r64/r64bread.index -t 0 -r ERR458493.fastq.gz -o ../BAM/res458493.bam &> ../BAM/R493.log
+subread-align --multiMapping --sortReadsByCoordinates -a \ r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -B 3 -T 16 -i r64/r64bread.index \
+-t 0 -r ERR458493.fastq.gz -o ../BAM/ERR458493.bam &> ../BAM/R493.log
+
 
 ```
 
@@ -423,8 +427,7 @@ cd ~/Documents/RProjects/genomics/RNA-genomics/FASTQ
 source $HOME/miniconda3/bin/activate
 conda activate rnaseq
 
-featureCounts -O -t gene -g gene_id -a r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -o ../counts.txt ../BAM/*.bam
-
+featureCounts -a r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -M --fraction -o ../counts.txt ../BAM/*.bam
 ```
 
 

@@ -20,8 +20,6 @@ bookdown::html_chapters:
 bookdown::pdf_book:
   includes:
     in_header: latex/preamble.tex
-    before_body: latex/before_body.tex
-    after_body: latex/after_body.tex
   keep_tex: yes
   dev: "cairo_pdf"
   latex_engine: xelatex

@@ -1,6 +1,11 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 # RNAseq diferential & exploratory analysis
 
-This should be the same counts file you generated, but now we're going to do a bit more with them in R. There are six yeast RNAseq samples.
+We going to generate BAM files from the FASTQ files you downloaded, anad then do differential gene expresion analysis in R. There are six yeast RNAseq samples.
 
 ```{r setup, include=FALSE}
 
@@ -10,81 +15,71 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 
 ```
 
-
+Load packages, install if necessary
 ```{r LoadPackages, results='hide', message = FALSE,include=FALSE}
 
-# Install function for packages (I shamelessly stole this from stackoverflow)
-packages<-function(x){
-  x<-as.character(match.call()[[2]])
-  if (!require(x,character.only=TRUE)){
-    install.packages(pkgs=x,repos="http://cran.r-project.org")
-    require(x,character.only=TRUE)
-  }
-}
+packages <- c("DESeq2" ,"devtools", "dplyr","edgeR",               
+"GenomicAlignments","GenomicFeatures","ggplot2",             
+"pheatmap","RColorBrewer","readr","Rsubread")
 
-bioconductors <- function(x){
-    x<- as.character(match.call()[[2]])
-    if (!require(x, character.only = TRUE)){
-      if (!require("BiocManager", quietly = TRUE))
-      install.packages("BiocManager")
-      BiocManager::install(x)
-      require(x, character.only = TRUE)
+bioconductor<-function(...) {
+    if (
+            !require("BiocManager", quietly = TRUE))
+            install.packages("BiocManager")
+            
+    available = BiocManager::available()
+    libs<-unlist(list(...))
+    req<-suppressWarnings(unlist(
+      lapply(libs,require,character.only=TRUE)))
+    need<-libs[req==FALSE]
+    n<-length(need)
+    if(n==0) invisible(lapply(libs,library,character.only=TRUE))
+          
+    if(n>0){
+        libsmsg<-if(n>2) paste(paste(need[1:(n-1)],collapse=", "),",",sep="") else need[1]
+       
+        if(n==1){ libsmsg<-need[1]}
+        if(n>1){
+            libsmsg<-paste(libsmsg," and ", need[n],sep="")
+        }
+        libsmsg<-cat(paste("The following packages could not be found: ",libsmsg,"\n\r\n\rInstall missing packages?",collapse=""))
+        
+        answer = menu(c("Yes", "No"))
+        if(answer != 1) {cat("Nothing done\\n")} else {
+         
+        
+            
+          ins = setdiff(need,available) 
+          wneed = which(need %in% ins)
+          if (length(wneed) > 0) need=need[-wneed]
+          wav = which(need %in% available)
+          
+          if (length(ins) > 0) {install.packages(ins)
+          invisible(lapply(ins,library,character.only=TRUE))
+        
+          } 
+            
+            if (length(need) > 0) {
+            
+            BiocManager::install(need)
+           
+            invisible(lapply(need[wav],library,character.only=TRUE))}
+        }
+        
     }
 }
 
-
-
+    
+bioconductor(packages)    
+          
+    
+   
 ```
 
 ## Differential Expression Testing
 
 Read the documents: https://bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html
 
-Installs:
-```{r eval=FALSE, results='hide', include=FALSE}
-packages(ggplot2)
-packages(pheatmap)
-packages(plyr)
-packages(dplyr)
-packages(tidyr)
-packages(data.table)
-bioconductors(edgeR)
-bioconductors("tximport")
-bioconductors("DESeq2")
-packages("devtools")
-bioconductors("RColorBrewer")
-devtools::install_github("karthik/wesanderson")
-bioconductors("org.Sc.sgd.db")
-bioconductors("GOstats")
-bioconductors("edgeR")
-
-
-```
-
-
-Load Libraries: 
-```{r, warning = FALSE, message = FALSE}
-
-library(ggplot2)
-library(pheatmap)
-library(vsn)
-library(dplyr)
-library(tidyverse)
-library(ggrepel)
-library(plyr)
-library(tidyr)
-library(data.table)
-library(DESeq2)
-library(edgeR)
-library(readr)
-library(tximport)
-library(DESeq2)
-library(tidyverse)
-library(RColorBrewer)
-library(wesanderson)
-library(org.Sc.sgd.db)
-
-```
 
 In this exercise we are going to walk through the NGS pipeline for rna-seq, starting from FASTQ files and ending with analyzed rna-seq data. While this is running we will try and see if we can recapitulate this in the command line using a shell script. The workflow in this process begins with 
 
@@ -94,7 +89,7 @@ In order to generate a count matrix from FASTQ reads, we need to 1) index the re
 
 We can do this in R using the Rsubread package, but it is rather slow. 
 So what we are going to do while it is running is to run the same process in
-the command line using the conda subread package. The results should be identical, but it will be nice for you to get a feel for both (especially for those of you who don't have terminal emulators and are on linux machines).
+the command line using the Conda subread package. The results should be identical, but it will be nice for you to get a feel for both.
 
 Step 1. Indexing the reference file. Why does it mean to we index a reference file? Indexing a genome can be explained similar to indexing a book. If you want to know on which page a certain word appears or a chapter begins, it is much more efficient/faster to look it up in a pre-built index than going through every page of the book until you found it. Same goes for alignments. Indices allow the aligner to narrow down the potential origin of a query sequence within the genome, saving both time and memory.
 
@@ -110,10 +105,9 @@ fastq = fastq[g]
 fastq.files = paste("FASTQ",fastq,sep = "/")
 fastq.files = file.path("FASTQ",fastq)
 
-# here we are just generating the names of theà bamfiles
+# here we are just generating the names of the bamfiles
 bam = gsub("FASTQ/","BAM/",fastq.files)
 
-bam = gsub(".fastq.gz",".bam",bam)
 
 bam.files = bam
 gtf.file = "FASTQ/r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz"
@@ -123,7 +117,7 @@ gtf.file
 fastq.files
 ```
 
-Now we'll run the alignment:
+Here before we start we want to make a folder r64 in the RNA-genomic directory. Now we'll run the alignment:
 ```{r eval=FALSE}
 
 # first build the index
@@ -137,22 +131,23 @@ bam.files = gsub("ERR458","R",bam.files)
 
 ```
 
+![](figures/dge_workflow_with_qc.png)
 And now we will align the reads; we will go with the default parameters EXCEPT
 we will add the argument sortReadsByCoordinates=TRUE which will be convenient for downstream analysis. I also set nthreads to 64, which is the physical core of a CPU to help speed things up -- 64 is the maximum for my computer -- but the number of threads you use doens't seem to help the speed much.
 
-OK, let's start this and then come back to it.
+OK, let's start this and go back to our shell script.
 ```{r eval=FALSE}
 
 Rsubread::align(index = "r64/r64.index", readfile1 = fastq.files,
-output_file = bam.files,useAnnotation=TRUE,annot.ext = "FASTQ/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz",isGTF = TRUE,nthreads=64,sortReadsByCoordinates=TRUE, keepReadOrder=FALSE)
+output_file = bam.files,useAnnotation=TRUE,annot.ext = "FASTQ/r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz",isGTF = TRUE,nthreads=64,sortReadsByCoordinates=TRUE, keepReadOrder=FALSE)
 ```
 
 Once we have our reads aligned to the genome, the next step is to count how many reads have mapped to each gene as a measure of gene expression. There are many tools that can use BAM files as input and output the number of reads (counts) associated with each feature of interest (genes, exons, transcripts, etc.). Two commonly used counting tools are featureCounts and summarize overlaps.Counting reads is not a straight forward task and there are many factors that bias the final count tally.
 
-The last panel of this figure should dread BAM ready for count calling:
+The last panel of this figure should read BAM ready for count calling:
 <img src="figures/variant_calling_workflow_cleanup.png" alt = "**Gene counting workflow**" height = 500px class="center">
 
-The above tools only report the “raw” counts of reads that map to a single location (uniquely mapping) and are best at counting at the gene level. Essentially, total read count associated with a gene (meta-feature) = the sum of reads associated with each of the exons (feature) that “belong” to that gene.
+The above tools report the “raw” counts of reads that map to a single location (uniquely mapping) and are best at counting at the gene level. Essentially, total read count associated with a gene (meta-feature) = the sum of reads associated with each of the exons (feature) that “belong” to that gene.
 
 There are other tools that will count multimapping reads (sequences that align to more that one position in the genome), but this is a dangerous thing to do since you will be overcounting the total number of reads which can cause issues with normalization and eventually with accuracy of differential gene expression results -- personally I think this is arguable. In RNA-seq, you want to know the total number of transcripts of a particular gene regardless of where it is in the genome and ignoring these genes can lead to missing a lot of genes that may be duplicated in the genome, particularly as these genes are often under the same regulatory control.
 
@@ -160,7 +155,7 @@ Tools for counting require as input multiple BAM files a GTF file which contains
 
 <img src="figures/gtf.png" height="400px" alt = "**GTF file**" class="center">
 
-Simply speaking, the genomic coordinates of where the BAM reads are mapped are cross-referenced with the genomic coordinates of whichever feature you are interested in counting expression of (GTF), it can be exons, genes or transcripts.
+The genomic coordinates of where the BAM reads are mapped are cross-referenced with the genomic coordinates of whichever feature you are interested in counting expression of (GTF), it can be exons, genes or transcripts.
 
 Output of counting = A count matrix, with genes as rows and samples are columns
 
@@ -168,18 +163,19 @@ Output of counting = A count matrix, with genes as rows and samples are columns
 These are the “raw” counts and will be used in statistical programs downstream for differential gene expression.
 
 Counting using featureCounts
-This tool is frequently used because it is accurate, fast and is relatively easy to use. It also has a lot of options that other software tools don't have. featureCounts counts reads that map to a single location (uniquely mapping) and discards reads that are ambiguous, following the scheme in the figure below using the gtf file and BAM files as input.
+featureCounts is frequently used because it is accurate, fast and is relatively easy to use. It also has a lot of options that other software tools don't have. featureCounts counts reads that map to a single location (uniquely mapping) and discards reads that are ambiguous, following the scheme in the figure below using the gtf file and BAM files as input.
 
 <img src="figures/workflow_gene_quant.png" alt = "**Counting reads: featureCounts**" width = 900>
 
 
-FeatureCounts has an option to count multi-mapping reads, that most other counting software tools don't have. "Multi-overlapping" reads are reads that overlap with more than one position in the chromosome, but do not overlap more that one feature -- not to be confused with "multi-mapping" reads where a read overlaps more than one feature in the genome. FeatureCounts is a widely used tool and the consensus is that these multi-mapping reads should not be counted in a RNA-seq experiment because such reads are ambiguous as it is unclear which gene they originated from. 
+FeatureCounts has an option to count multi-mapping reads, that most other counting software tools don't have. "Multi-overlapping" reads are reads that overlap with more than one position in the chromosome, but do not overlap more that one feature -- not to be confused with "multi-mapping" reads where a read overlaps more than one feature in the genome. For RNA-seq data, a read is called as a multi-mapping read if it has two or more candidate mapping locations that have the same number of mis-matched bases and this number is the smallest in all candidate
+locations being considered, and not more than 3 mismatches. FeatureCounts is a widely used tool and the consensus is that these multi-mapping reads should not be counted in a RNA-seq experiment because such reads are ambiguous as it is unclear which gene they originated from. 
 
 
 <img src="figures/countingreads_fc.png" alt = "**Counting reads: Union**" width = 900>
 
 
-Genomic multireads are primarily due to repetitive sequences or shared domains of paralogous genes. However, when you look at the literature for best practices for RNA seq they explicitly state that these sequences should not be discarded as they normally account for a significant fraction of the mapping output when mapped onto the genome. When the reference is the transcriptome, multi-mapping arises even more often because a read that would have been uniquely mapped on the genome would map equally well to all gene isoforms in the transcriptome that share the exon. In either case — genome or transcriptome mapping — transcript identification and quantification become important challenges for alternatively expressed genes. For this reason we have decided to include these features in our analysis.
+Genomic multireads are primarily due to repetitive sequences or shared domains of paralogous genes. The literature for best practices for RNA seq they explicitly state that these sequences should not be discarded as they normally account for a significant fraction of the mapping output when mapped onto the genome. When the reference is the transcriptome, multi-mapping arises even more often because a read that would have been uniquely mapped on the genome would map equally well to all gene isoforms in the transcriptome that share the exon. In either case — genome or transcriptome mapping — transcript identification and quantification become important challenges for alternatively expressed genes. For this reason we have decided to include these features in our analysis. 
 
 <img src="figures/multioverlap.png">
 
@@ -295,7 +291,7 @@ names(meta)[2] = "genome"
 meta$genome = factor(meta$genome)
 meta$genome = relevel(meta$genome,ref = "wt")
 # make wild-type the reference to which expression in snf2 samples is compared to
-meta = meta %>% arrange(sample)
+meta = meta %>% dplyr::arrange(sample)
 meta$sample
 meta = data.frame(meta,stringsAsFactors = F)
 rownames(meta)=meta$sample
@@ -325,20 +321,16 @@ dds$genome <- relevel(dds$genome, ref = "wt") # make wild-type the reference to 
 dds <- DESeq(dds)
 ```
 
-
-```{r} 
-dds <- DESeq(dds,fitType='mean')
-```
-
 - **Read in Data**
 
 We've already read in the metadata for our experiment, let's view it:
 ```{r}
-view(meta)
+glimpse(meta)
 ```
 
 
 Behind the scenes these steps were run in DESeq2 function:
+
 1.estimating size factors
 2.gene-wise dispersion estimates
 3.mean-dispersion relationship
@@ -347,49 +339,11 @@ Behind the scenes these steps were run in DESeq2 function:
 
 The design formula `design = ~genome` tells DESeq2 which factors in the metadata to test, such as control v.s. treatment. Here our condition is wt v.s. snf2 as shown in the `meta`.
 
-The design can include multiple factors that are columns in the metadata. In this case, the factor that you are testing for comes last, and factors that you want to account for come first. E.g. To test for differences in condition while accounting for sex and age: `design = ~ sex + age + condition`. It's also possible to include time series data and interactions.
-
-## DESeq2 count normalization
-
-Let’s see how, in practice, we can use DESeq2 median-of-ratios method to normalize the gene counts.
-
-Geometric mean:
-exp(mean(log(data[data>0])))
-  $$geometricmean = exp(mean(log(x[x>0])))$$
-	$$(\prod_{x = 1}^{n})^ \frac{1}{n} = \sqrt[n]{x_{1}x_{2}...x_{n}}$$
-
-Step 1: creates a pseudo-reference sample (row-wise geometric mean).
-For each gene, a pseudo-reference sample is created that is equal to the geometric mean across all samples.
+The design can include multiple factors that are columns in the metadata. In this case, the factor that you are testing for comes last, and factors that you want to account for come first. E.g. To test for differences in condition while accounting for sex and age: `design = ~ sex + age + condition`. 
 
 <img src="figures/DESeq2_step1.png" width=600>
 
-
-Step 2: calculates ratio of each sample to the reference.
-Calculate the ratio of each sample to the pseudo-reference. Since most genes aren't differentially expressed, ratios should be similar.
-
 <img src="figures/DESeq2_step2.png" width=600>
-
-Step 3: calculate the normalization factor for each sample (size factor).
-The median value of all ratios for a given sample is taken as the normalization factor (size factor) for that sample:
-
-
-```{r}
-normalization_factor_sampleA <- median(c(1.00, 3.16))
-normalization_factor_sampleB <- median(c(1.00, 0.32)) 
-normalization_factor_sampleA 
-normalization_factor_sampleB
-```
-
-Step 4: calculate the normalized count values using the normalization factor. This is performed by dividing each raw count value in a given sample by that sample's size factor to generate normalized count values.
-
-```{r}
-normalization_factor_sampleA = 2.08
- 
-normalization_factor_sampleB = 0.66
-```
-
-<img src="figures/DESeq2_normalization.png" width=600>
-
 - **Unsupervised Clustering**
 
 This step is to asses overall similarity between samples:
@@ -447,7 +401,7 @@ head(assay(rld), 3)
 ```
 
 **Variance stabilizing transformation (so much faster than rlog):**
-"This function calculates a variance stabilizing transformation (VST) from the fitted dispersion-mean relation(s) and then transforms the count data (normalized by division by the size factors or normalization factors), yielding a matrix of values which are now approximately homoskedastic (having constant variance along the range of mean values). The transformation also normalizes with respect to library size. The rlog is less sensitive to size factors, which can be an issue when size factors vary widely. These transformations are useful when checking for outliers or as input for machine learning techniques such as clustering or linear discriminant analysis."" – from function documentation.
+"This function calculates a variance stabilizing transformation (VST) from the fitted dispersion-mean relation(s) and then transforms the count data (normalized by division by the size factors or normalization factors), yielding a matrix of values which are now approximately homoskedastic (having constant variance along the range of mean values). The transformation also normalizes with respect to library size. The rlog is less sensitive to size factors, which can be an issue when size factors vary widely. These transformations are useful when checking for outliers or as input for machine learning techniques such as clustering or linear discriminant analysis." – from function documentation.
 
 ```{r, cache = TRUE}
 vsd <- vst(dds, blind = TRUE)
@@ -594,10 +548,10 @@ names(mat_colors1$sample)<- df$sample
 mat_colors <- list(genome = brewer.pal(12, "Paired")[7:8])
 names(mat_colors$genome) <- c("wt", "snf2")
 
-genes <- order(res$padj)[1:1000]
+genes <- order(res$padj)[1:50]
 
 pheatmap(assay(rld)[genes, ], cluster_rows=TRUE, show_rownames=FALSE,
-         cluster_cols=FALSE, annotation_col=df, annotation_colors = c(mat_colors1, mat_colors), fontsize = 12)
+         cluster_cols=TRUE, annotation_col=df, annotation_colors = c(mat_colors1, mat_colors), fontsize = 12)
 ```
 
 variance stabilized HeatMap: 
@@ -614,13 +568,13 @@ plot the difference from the mean normalized count across samples
 
 With Rlog transformed data:
 ```{r heatmap_rld_meandiff}
-library(wesanderson)
-pal <- wes_palette(name = "Zissou1", n=2000 , type= "continuous")
 
-mat_colors1<-list(sample = wes_palette("IsleofDogs1", 6))
+pal <- brewer.pal(9,"YlOrRd")
+
+mat_colors1<-list(sample = brewer.pal(6 ,"Set2"))
 names(mat_colors1$sample)<- df$sample
 
-mat_colors <- list(genome = wes_palette("Cavalcanti1")[4:5])
+mat_colors <- list(genome = brewer.pal(2,"Set3")[1:2])
 names(mat_colors$genome) <- c("wt", "snf2")
 
 mat <- assay(rld)[genes, ]
@@ -629,7 +583,7 @@ mat <- mat - rowMeans(mat)
 df <- as.data.frame(colData(rld)[,c("genome", "sample")])
 
 pheatmap(mat,  cluster_rows=TRUE, show_rownames=FALSE,
-         cluster_cols=FALSE, annotation_col=df, annotation_colors = c(mat_colors1, mat_colors), fontsize = 12, color = pal)
+         cluster_cols=TRUE, annotation_col=df, annotation_colors = c(mat_colors1, mat_colors), fontsize = 12, color = pal)
 
 ```
 
@@ -693,8 +647,7 @@ contrast <- c("genome", "snf2", "wt")
 res_unshrunken <- results(dds, contrast=contrast)
 # Shrink log fold changes for genes with high dispersion
 res <- lfcShrink(dds, contrast=contrast, res=res_unshrunken)
-# Regularized log transformation (rlog)
-rld <- rlog(dds, blind=TRUE)
+
 ```
 
 Run DESeq2: 
@@ -704,7 +657,8 @@ dds <- DESeq(dds)
 
 Check out results: 
 ```{r}
-res <- results(dds)
+resultsNames(dds)
+res <- results(dds,name = "genome_snf2_vs_wt")
 head(res)
 ```
 
@@ -747,14 +701,20 @@ Perform the DESeq analysis on the dds dataset and get the results
 
 
 Get information on what the columns of the results contain:
+
+
+Make a dataframe with ORF and GENE as columns and arrange the data in order of padj and descending order by absolute value of log2FoldChange. Filter the results for those records that have padj < 0.05 and absolute value of res$log2FoldChange > 2 (i.e., at least double or half the level of expression).
 ```{r}
+# To make a data.frame type:
+# 
+dres = data.frame(res,stringsAsFactors = F,orf = rownames(res))
+m = match(dres$orf,names(gene))
+# check to see that all orfs were found in the names of gene
+table(is.na(m)) # is Not Available (missing)
+dres$gene = gene[m]
 
-```
 
-Filter the results for FDR < 0.05 and absolute value of Fold-Change > 2 (i.e., at least double or half the level of expression)
-
-Make a dataframe with ORF and GENE as columns and arrange the data in order of padj and descending order by absolute value of log2FoldChange. Filter the results for those records that have padj < 0.05 and absolute value of res$log2FoldChange > 2.
-```{r}
+dres = dres %>% arrange(padj,  desc(abs(log2FoldChange)))
 
 ```
 
@@ -762,7 +722,8 @@ Make a dataframe with ORF and GENE as columns and arrange the data in order of p
 Genes with very low expression usually have very noisy estimates of log2 fold changes. It is desirable to shrink the fold change of genes with low read counts, but not shrink the fold change of highly expressed genes too much. DEseq2 has implemented several different algorithms for shrinkage. The DESeq2 developers recommend to use apeglm method for shrinkage. Shrinkage is especially important if you plan to use LFC to rank genes for enrichment analysis (e.g., GSEA, to be covered next week).
 
 Perform the shrinkage with "apeglm", then compare the MA plot
-with or without shrinkage. 
+with or without shrinkage. Make the same data.frame as the one above
+and compare the results.
 ```{r}
 
 
@@ -788,15 +749,13 @@ You should get something like this:
 ![](figures/fullgenomeIGV.png)
 
 
-If we want to see are reads we have to zoom in. Unfortunately, the web app doesn't make it easy to search for genes so we have to do it the hard way.
+If we want to see our reads we have to zoom in. Unfortunately, the web app doesn't make it easy to search for genes so we have to do it the hard way.
 
 Question: pick five of your top hits in the DESeq2 analysis and see if they check out.
 
 
 
-Question:
-
-Look up a gene with an intron. How do the reads compare to genes without introns?
+Question: look up a gene with an intron. How do the reads compare to genes without introns?
 
 
 
