@@ -91,7 +91,7 @@ We can do this in R using the Rsubread package, but it is rather slow.
 So what we are going to do while it is running is to run the same process in
 the command line using the Conda subread package. The results should be identical, but it will be nice for you to get a feel for both.
 
-Step 1. Indexing the reference file. Why does it mean to we index a reference file? Indexing a genome can be explained similar to indexing a book. If you want to know on which page a certain word appears or a chapter begins, it is much more efficient/faster to look it up in a pre-built index than going through every page of the book until you found it. Same goes for alignments. Indices allow the aligner to narrow down the potential origin of a query sequence within the genome, saving both time and memory.
+Step 1. Indexing the reference genome. Why does it mean to we index a reference file? Indexing a genome can be explained similar to indexing a book. If you want to know on which page a certain word appears or a chapter begins, it is much more efficient/faster to look it up in a pre-built index than going through every page of the book until you found it. Same goes for alignments. Indices allow the aligner to narrow down the potential origin of a query sequence within the genome, saving both time and memory.
 
 To index the reference file we need the reference genome file Saccharomyces_cerevisiae.R64-1-1.dna.toplevel.fa.gz that contains all of the DNA sequences. We also need the gtf file which contains GTF file which contains all of the genomic features, exons, transcripts, genes noncoding regions etc. If we run the alignments and generate the counts in R using this package with the same parameters as we use in subread they should generate identical count matrices. The R version takes about 20' to run. Make sure you have a copy of Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz and Saccharomyces_cerevisiae.R64-1-1.dna.toplevel.fa.gz in your appropriate directories as listed below. 
 
@@ -107,6 +107,7 @@ fastq.files = file.path("FASTQ",fastq)
 
 # here we are just generating the names of the bamfiles
 bam = gsub("FASTQ/","BAM/",fastq.files)
+bam = gsub(".fastq.gz",".bam",bam)
 
 
 bam.files = bam
@@ -117,7 +118,7 @@ gtf.file
 fastq.files
 ```
 
-Here before we start we want to make a folder r64 in the RNA-genomic directory. Now we'll run the alignment:
+Here before we start we want to make a folder r64 in the RNA-genomic directory and then set eval = TRUE. Now we'll run the indexing of the reference:
 ```{r eval=FALSE}
 
 # first build the index
@@ -132,24 +133,24 @@ bam.files = gsub("ERR458","R",bam.files)
 ```
 
 ![](figures/dge_workflow_with_qc.png)
-And now we will align the reads; we will go with the default parameters EXCEPT
+Step 2. Align the reads. We will go with the default parameters EXCEPT
 we will add the argument sortReadsByCoordinates=TRUE which will be convenient for downstream analysis. I also set nthreads to 64, which is the physical core of a CPU to help speed things up -- 64 is the maximum for my computer -- but the number of threads you use doens't seem to help the speed much.
 
-OK, let's start this and go back to our shell script.
+OK, let's start this and go back to our shell script. First I have to set eval = TRUE again.
 ```{r eval=FALSE}
 
 Rsubread::align(index = "r64/r64.index", readfile1 = fastq.files,
 output_file = bam.files,useAnnotation=TRUE,annot.ext = "FASTQ/r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz",isGTF = TRUE,nthreads=64,sortReadsByCoordinates=TRUE, keepReadOrder=FALSE)
 ```
 
-Once we have our reads aligned to the genome, the next step is to count how many reads have mapped to each gene as a measure of gene expression. There are many tools that can use BAM files as input and output the number of reads (counts) associated with each feature of interest (genes, exons, transcripts, etc.). Two commonly used counting tools are featureCounts and summarize overlaps.Counting reads is not a straight forward task and there are many factors that bias the final count tally.
+Step 3. Count the reads. Once we have our reads aligned to the genome, the next step is to count how many reads have mapped to each gene as a measure of gene expression. There are many tools that can use BAM files as input and output the number of reads (counts) associated with each feature of interest (genes, exons, transcripts, etc.). Two commonly used counting tools are featureCounts and summarize overlaps.Counting reads is not a straight forward task and there are many factors that bias the final count tally.
 
 The last panel of this figure should read BAM ready for count calling:
 <img src="figures/variant_calling_workflow_cleanup.png" alt = "**Gene counting workflow**" height = 500px class="center">
 
 The above tools report the “raw” counts of reads that map to a single location (uniquely mapping) and are best at counting at the gene level. Essentially, total read count associated with a gene (meta-feature) = the sum of reads associated with each of the exons (feature) that “belong” to that gene.
 
-There are other tools that will count multimapping reads (sequences that align to more that one position in the genome), but this is a dangerous thing to do since you will be overcounting the total number of reads which can cause issues with normalization and eventually with accuracy of differential gene expression results -- personally I think this is arguable. In RNA-seq, you want to know the total number of transcripts of a particular gene regardless of where it is in the genome and ignoring these genes can lead to missing a lot of genes that may be duplicated in the genome, particularly as these genes are often under the same regulatory control.
+There are other tools that will count multimapping reads (sequences that align to more that one position in the genome), but this is a dangerous thing to do since you will be overcounting the total number of reads which can cause issues with normalization and eventually with accuracy of differential gene expression results -- but this is arguable. In RNA-seq, you want to know the total number of transcripts of a particular gene regardless of where it is in the genome and ignoring these genes can lead to missing a lot of genes that may be duplicated in the genome, particularly as these genes are often under the same regulatory control.
 
 Tools for counting require as input multiple BAM files a GTF file which contains all of the genonomic features, exons, transcripts, genes noncoding regions etc.
 
@@ -179,24 +180,23 @@ Genomic multireads are primarily due to repetitive sequences or shared domains o
 
 <img src="figures/multioverlap.png">
 
-FeatureCounts only takes a few inputs,and in fact the default for the argument 
-countMultiMappingReads is set to TRUE, so we don't need to add it. 
-
-You should look up featureCounts help menu in RStudio to see all of the options as it is quite extensize, also
-compare it to looking the help file up in the terminal by typing featureCounts -h. Even though the conda package subread and the R package Rsubread come from the same source, the options are are not the same, and are quite complex.
+featureCounts in RStudio is extensive, and not all the options are set to the same defaults as the ones in the terminal that you can see by typing 
+typing featureCounts -h. So even though the Conda package subread and the R package Rsubread come from the same source, the options are are not the same, and pretty complicated.
 
 ```{r featureCounts}
 
 library(Rsubread)
 
-fc <- featureCounts(bam.files, annot.ext=gtf.file,
+fc <- featureCounts(bam.files, annot.ext=gtf.file, 
 isGTFAnnotationFile=TRUE,
-isPaired=FALSE)
-
+isPaired=FALSE,
+###################
+allowMultiOverlap = FALSE,countMultiMappingReads = TRUE)
+##################
 
 ```
 
-Another popular method of extracting count files from BAM files is by using `summarizeOverlaps` from the GenomicAlignments package. `summarizeOverlaps` uses only the exons extracted from the TxDb object (which stores relationships between pre-processed mRNA transcripts, exons, protein coding sequences, and genes construncted from the gtf file.
+Another method of extracting count files from BAM files is by using `summarizeOverlaps` from the GenomicAlignments package. `summarizeOverlaps` uses only the exons extracted from the TxDb object (which stores relationships between pre-processed mRNA transcripts, exons, protein coding sequences, and genes construncted from the gtf file.
 
 We specify a number of arguments besides the features and the reads. 
 The mode argument describes what kind of read overlaps will be counted, as in featureCounts (see below). Note that fragments will be counted only once to each gene, even if they overlap multiple exons of a gene which may themselves be overlapping.
@@ -220,10 +220,10 @@ library(GenomicAlignments)
 se <- summarizeOverlaps(exons.by.gene, bam.list, mode=Union,
        inter.feature=TRUE, singleEnd=TRUE,ignore.strand = TRUE)
 
-ase = assays(se)$counts
-g=grep("^Y" ,rownames(ase))
-ase = ase[g,]
-
+mse = assays(se)$counts
+g=grep("^Y" ,rownames(mse))
+mse = mse[g,]
+mse = mse[order(rownames(mse)),]
 ```
 
 Now let's plot the two against each other to see how they compare.
@@ -233,8 +233,14 @@ Compare summarizedOverlaps to featureCounts:
 m=match(rownames(assay(se) ),rownames(fc$counts))
 
 plot(assay(se[,1]),fc$counts[m,1],ylab = "featureCounts",xlab = "summarizeOverlaps",pch=19)
+abline(a=0,b=1)
+
+
+table(assay(se)==fc$counts[m,])
+
 
 counts = fc$counts 
+
 g = grep("^Y",rownames(counts))
 counts = counts[g,]
 counts = counts[order(rownames(counts)),]
@@ -250,9 +256,6 @@ cts = cts[order(rownames(cts)),]
 colnames(cts)=basename(colnames(cts))
 table(all.equal(counts,cts))
 ```
- 
-We can see that, featureCounts and summarizeOverlaps produce the same results. And the counts generated from the subreadMapping.sh
-equals those generated in R.
 
 A word about summarized experiments. The way summarized experiments are set up is that the rownames of the colData or metadata, also sometimes called phenoData, must match the colnames of the assay data -- the count data or expression data. Similarly, the rownames of the assay data must match the rowRanges of the featureData. This is all part of Bioconductor's way of standardizing structures so that they work well with each other across and within packages.
 
@@ -281,7 +284,6 @@ rownames(genecnts)=gene[m]
 
 Let's rename our colnames of counts from bamfile names back to our original sample names before we start our differential analysis:
 ```{r rename}
-
 
 library(readr)
 library(dplyr)
