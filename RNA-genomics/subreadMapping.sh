@@ -2,10 +2,13 @@
 # To run this 'shell script' you will need to open your terminal and navigate to the directory where this script resides on your computer.
 # This should be the same directory where you fastq files and reference fasta file are found.
 # Change permissions on your computer so that you can run a shell script by typing: 'chmod 777 subreadMapping.sh' (without the quotes) at the terminal prompt 
-# Then type './subreadMapping.sh' (without the quotes) at the prompt.  
+# Then type './subreadMapping.sh' (without the quotes) at the prompt.
+# 
+# Make sure you have created a FASTQC and a BAM folder in the RNA-genomics directory
+#   
 # This will begin the process of running each line of code in the shell script.
-
-## load subread module
+cd $HOME/Documents/RProjects/RNA-genomics/FASTQ
+# activate Conda
 source $HOME/miniconda3/bin/activate 
 conda activate rnaseq
 # first use fastqc to check the quality of our fastq files:
@@ -18,17 +21,17 @@ subread-buildindex -o r64/r64bread.index r64/Saccharomyces_cerevisiae.R64-1-1.dn
 # use as many 'threads' as your machine will allow in order to speed up the read mapping process.
 # note that we're also including the '&>' at the end of each line
 # this takes the information that would've been printed to our terminal, and outputs this in a log file that is saved in /data/course_data
- 
-# aligning
-subread-align --sortReadsByCoordinates -a r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -B 3 -T 16 -i r64/r64bread.index -t 0 -r ERR458493.fastq.gz -o ../BAM/ERR458493.bam &> ../BAM/R493.log
-subread-align --sortReadsByCoordinates -a r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -B 3 -T 16 -i r64/r64bread.index -t 0 -r ERR458494.fastq.gz -o ../BAM/ERR458494.bam &> ../BAM/R494.log
-subread-align --sortReadsByCoordinates -a r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -B 3 -T 16 -i r64/r64bread.index -t 0 -r ERR458495.fastq.gz -o ../BAM/ERR458495.bam &> ../BAM/R495.log
-subread-align --sortReadsByCoordinates -a r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -B 3 -T 16 -i r64/r64bread.index -t 0 -r ERR458500.fastq.gz -o ../BAM/ERR458500.bam &> ../BAM/R500.log
-subread-align --sortReadsByCoordinates -a r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -B 3 -T 16 -i r64/r64bread.index -t 0 -r ERR458501.fastq.gz -o ../BAM/ERR458501.bam &> ../BAM/R501.log
-subread-align --sortReadsByCoordinates -a r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -B 3 -T 16 -i r64/r64bread.index -t 0 -r ERR458502.fastq.gz -o ../BAM/ERR458502.bam &> ../BAM/R502.log
+
+# aligning: -B report up to three best mapping locations
+subread-align --multiMapping --sortReadsByCoordinates -a r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -B 3 -T 16 -i r64/r64bread.index -t 0 -r ERR458493.fastq.gz -o ../BAM/ERR458493.bam &> ../BAM/R493.log
+subread-align --multiMapping --sortReadsByCoordinates -a r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -B 3 -T 16 -i r64/r64bread.index -t 0 -r ERR458494.fastq.gz -o ../BAM/ERR458494.bam &> ../BAM/R494.log
+subread-align --multiMapping --sortReadsByCoordinates -a r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -B 3 -T 16 -i r64/r64bread.index -t 0 -r ERR458495.fastq.gz -o ../BAM/ERR458495.bam &> ../BAM/R495.log
+subread-align --multiMapping --sortReadsByCoordinates -a r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -B 3 -T 16 -i r64/r64bread.index -t 0 -r ERR458500.fastq.gz -o ../BAM/ERR458500.bam &> ../BAM/R500.log
+subread-align --multiMapping --sortReadsByCoordinates -a r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -B 3 -T 16 -i r64/r64bread.index -t 0 -r ERR458501.fastq.gz -o ../BAM/ERR458501.bam &> ../BAM/R501.log
+subread-align --multiMapping --sortReadsByCoordinates -a r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -B 3 -T 16 -i r64/r64bread.index -t 0 -r ERR458502.fastq.gz -o ../BAM/ERR458502.bam &> ../BAM/R502.log
 # then get the reads using featureCounts
 #featureCounts -t 'exon' -g 'gene_id' -a r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -o ../counts.txt ../BAM/*.bam
-featureCounts -a r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -M -o ../counts.txt ../BAM/*.bam
+featureCounts -a r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -M --fraction -o ../counts.txt ../BAM/*.bam
 # Multi-mapping reads
 
   # -M Multi-mapping reads will also be counted. For a multi-
@@ -51,19 +54,19 @@ featureCounts -a r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -M -o ../counts.
   #    alignments that contains the query in the current record. 
   #    This tag may be used for downstream tools such as featureCounts.
 
-  #   -t 'exon' is unnecessary
+  #   -t 'exon' is unnecessary as it is the default
   #   -t <string> Specify feature type(s) in a GTF annotation. 
-  #    If multiple
-  #    types are provided, they should be separated by ',' with
+  #    If multiple types are provided, they should be separated by ',' with
   #    no space in between. 'exon' by default. Rows in the
   #    annotation with a matched feature will be extracted and
   #    used for read mapping.
-  # -g gene_id is unnecessary
-  # -g <string> Specify attribute type in GTF annotation. 'gene_id' by 
-                      # default. Meta-features used for read counting will be 
-                      # extracted from annotation using the provided value.
+  # -g gene_id is unnecessary.
+  #    Specify attribute type in GTF annotation. 'gene_id' by 
+  #    default. Meta-features used for read counting will be 
+  #    extracted from annotation using the provided value.
   
-# summarize fastqc and subread mapping results in a single summary html using MultiQC
+  # MultiQC summarizes fastqc and subread mapping results into 
+  # a single summary html using 
 multiqc -d . ../FASTQC
 
 echo "Finished"

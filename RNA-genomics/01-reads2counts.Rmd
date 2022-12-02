@@ -175,40 +175,244 @@ Aligning is just a simple command in the terminal. First we need to build an ind
 
 Most aligners need to create their own indexes, so here we will use the subread-buildindex command module to make an index file for the yeast genome. It will create a set of files, these files together comprise the index. The commands to generate the index looks like this:
 
+./subread-align [options] -i <index_name> -r <input> -t <type> -o <output>
 
+## Mandatory arguments:
+    
+  -i <string>       Base name of the index.
 
-Usage:
+  -r <string>       Name of an input read file. If paired-end, this should be
+                    the first read file (typically containing "R1"in the file
+                    name) and the second should be provided via "-R".
+                    Acceptable formats include gzipped FASTQ, FASTQ, gzipped
+                    FASTA and FASTA.
+                    These formats are identified automatically.
+    
+  -t <int>          Type of input sequencing data. Its values include
+                      0: RNA-seq data
+                      1: genomic DNA-seq data.
+    
+## Optional arguments:
+# input reads and output
+    
+  -o <string>       Name of an output file. By default, the output is in BAM
+                    format. Omitting this option makes the output be written to
+                    STDOUT.
 
-## ./subread-buildindex [options] -o <basename> {FASTA[.gz] file1}\
-      [FASTA[.gz] file2] ...
+  -R <string>       Name of the second read file in paired-end data (typically
+                    containing "R2" the file name).
 
-Required arguments:
+  --SAMinput        Input reads are in SAM format.
 
-    -o <basename>   base name of the index to be created
+  --BAMinput        Input reads are in BAM format.
 
-Optional arguments:
+  --SAMoutput       Save mapping results in SAM format.
 
-    -F              build a full index for the reference genome. 16bp subreads
-                    will be extracted from every position of the reference
-                    genome. Size of the index is typically 3 times the size of
-                    index built from using the default setting.
+# Phred offset
 
-    -B              create one block of index. The built index will not be split
-                    into multiple pieces. This makes the largest amount of
-                    memory be requested when running alignments, but it enables
-                    the maximum mapping speed to be achieved. This option
-                    overrides -M when it is provided as well.
+  -P <3:6>          Offset value added to the Phred quality score of each read
+                    base. '3' for phred+33 and '6' for phred+64. '3' by default.
 
-    -M <int>        size of requested memory(RAM) in megabytes, 8000 by default.
+# thresholds for mapping
 
-    -f <int>        specify the threshold for removing uninformative subreads
-                    (highly repetitive 16mers in the reference). 100 by default.
+  -n <int>          Number of selected subreads, 10 by default.
 
-    -c              build a color-space index.
+  -m <int>          Consensus threshold for reporting a hit (minimal number of
+                    subreads that map in consensus) . If paired-end, this gives
+                    the consensus threshold for the anchor read (anchor read
+                    receives more votes than the other read in the same pair).
+                    3 by default
 
-    -v              output version of the program.
+  -p <int>          Consensus threshold for the non- anchor read in a pair. 1 by
+                    default.
 
-For more information about these arguments, please refer to the User Manual.
+  -M <int>          Maximum number of mis-matched bases allowed in each reported
+                    alignment. 3 by default. Mis-matched bases found in soft-
+                    clipped bases are not counted.
+
+# unique mapping and multi-mapping
+
+  --multiMapping    Report multi-mapping reads in addition to uniquely mapped
+                    reads. Use "-B" to set the maximum number of equally-best
+                    alignments to be reported.
+
+  -B <int>          Maximum number of equally-best alignments to be reported for
+                    a multi-mapping read. Equally-best alignments have the same
+                    number of mis-matched bases. 1 by default.
+
+# indel detection
+
+  -I <int>          Maximum length (in bp) of indels that can be detected. 5 by
+                    default. Indels of up to 200bp long can be detected.
+
+  --complexIndels   Detect multiple short indels that are in close proximity
+                    (they can be as close as 1bp apart from each other).
+
+# read trimming
+
+  --trim5 <int>     Trim off <int> number of bases from 5' end of each read. 0
+                    by default.
+
+  --trim3 <int>     Trim off <int> number of bases from 3' end of each read. 0
+                    by default.
+
+# distance and orientation of paired end reads
+
+  -d <int>          Minimum fragment/insert length, 50bp by default.
+
+  -D <int>          Maximum fragment/insert length, 600bp by default.
+
+  -S <ff:fr:rf>     Orientation of first and second reads, 'fr' by default (
+                    forward/reverse).
+
+# number of CPU threads
+
+  -T <int>          Number of CPU threads used, 1 by default.
+
+# read group
+
+  --rg-id <string>  Add read group ID to the output.
+
+  --rg <string>     Add <tag:value> to the read group (RG) header in the output.
+
+# read order
+
+  --keepReadOrder   Keep order of reads in BAM output the same as that in the
+                    input file. Reads from the same pair are always placed next
+                    to each other no matter this option is specified or not.
+
+  --sortReadsByCoordinates Output location-sorted reads. This option is
+                    applicable for BAM output only. A BAI index file is also
+                    generated for each BAM file so the BAM files can be directly
+                    loaded into a genome browser.
+
+# color space reads
+
+  -b                Convert color-space read bases to base-space read bases in
+                    the mapping output. Note that read mapping is performed at
+                    color-space.
+
+# dynamic programming
+
+  --DPGapOpen <int> Penalty for gap opening in short indel detection. -1 by
+                    default.
+
+  --DPGapExt <int>  Penalty for gap extension in short indel detection. 0 by
+                    default.
+
+  --DPMismatch <int> Penalty for mismatches in short indel detection. 0 by
+                    default.
+
+  --DPMatch <int>   Score for matched bases in short indel detection. 2 by
+                    default.
+
+# detect structural variants
+
+  --sv              Detect structural variants (eg. long indel, inversion,
+                    duplication and translocation) and report breakpoints. Refer
+                    to Users Guide for breakpoint reporting.
+
+# gene annotation
+
+  -a                Name of an annotation file (gzipped file is accepted).
+                    GTF/GFF format by default. See -F option for more format
+                    information.
+
+  -F                Specify format of the provided annotation file. Acceptable
+                    formats include 'GTF' (or compatible GFF format) and
+                    'SAF'. 'GTF' by default. For SAF format, please refer to
+                    Users Guide.
+
+  -A                Provide a chromosome name alias file to match chr names in
+                    annotation with those in the reads. This should be a two-
+                    column comma-delimited text file. Its first column should
+                    include chr names in the annotation and its second column
+                    should include chr names in the index. Chr names are case
+                    sensitive. No column header should be included in the
+                    file.
+
+  --gtfFeature <string>  Specify feature type in GTF annotation. 'exon'
+                    by default. Features used for read counting will be 
+                    extracted from annotation using the provided value.
+
+  --gtfAttr <string>     Specify attribute type in GTF annotation. 'gene_id'
+                    by default. Meta-features used for read counting will be 
+                    extracted from annotation using the provided value.
+
+# others
+
+  -v                Output version of the program.
+  
+align(
+
+    # index for reference sequences
+    index,
+    
+    # input reads and output
+    readfile1,
+    readfile2 = NULL,
+    type = "rna",
+    input_format = "gzFASTQ",
+    output_format = "BAM",
+    output_file = paste(readfile1,"subread",output_format,sep="."),
+    
+    # offset value added to Phred quality scores of read bases
+    phredOffset = 33,
+    
+    # thresholds for mapping
+    nsubreads = 10,
+    TH1 = 3,
+    TH2 = 1,
+    maxMismatches = 3,
+    
+    # unique mapping and multi-mapping
+    unique = FALSE,
+    nBestLocations = 1,
+    
+    # indel detection
+    indels = 5,
+    complexIndels = FALSE,
+    
+    # read trimming
+    nTrim5 = 0,
+    nTrim3 = 0,
+    
+    # distance and orientation of paired end reads
+    minFragLength = 50,
+    maxFragLength = 600,
+    PE_orientation = "fr",
+    
+    # number of CPU threads
+    nthreads = 1,
+    
+    # read group
+    readGroupID = NULL,
+    readGroup = NULL,
+    
+    # read order
+    keepReadOrder = FALSE,
+    sortReadsByCoordinates = FALSE,
+    
+    # color space reads
+    color2base = FALSE,
+    
+    # dynamic programming
+    DP_GapOpenPenalty = -1,
+    DP_GapExtPenalty = 0,
+    DP_MismatchPenalty = 0,
+    DP_MatchScore = 2,
+    
+    # detect structural variants
+    detectSV = FALSE,
+    
+    # gene annotation
+    useAnnotation = FALSE,
+    annot.inbuilt = "mm39",
+    annot.ext = NULL,
+    isGTF = FALSE,
+    GTF.featureType = "exon",
+    GTF.attrType = "gene_id",
+    chrAliases = NULL)
 
 Next, we want to build an index from our reference fasta file:
 
@@ -404,23 +608,55 @@ Usage:
 Refer to Users Manual for detailed description to the arguments.
 
 The alignment command is as follows:
-
+(I had a really hard time getting this to work by typing it into the terminal
+with line breaks, so wait to run it in the shell script!)
 ```{zsh, eval=FALSE, engine="sh"}
 
 cd ~/Documents/RProjects/genomics/RNA-genomics/FASTQ
 source $HOME/miniconda3/bin/activate
 conda activate rnaseq
 
-subread-align --multiMapping --sortReadsByCoordinates -a \ r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -B 3 -T 16 -i r64/r64bread.index \
--t 0 -r ERR458493.fastq.gz -o ../BAM/ERR458493.bam &> ../BAM/R493.log
+subread-align --multiMapping -t0 --sortReadsByCoordinates -a\ 
+r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz\ 
+-B 3 -T 16 -i r64/r64bread.index\
+-r ERR458493.fastq.gz\
+-o ../BAM/ERR458493.bam &> ../BAM/R493.log
 
 
 ```
 
 
 
-Finally, to create the count matrix we use featureCounts. The command is the following:
+Finally, to create the count matrix we use featureCounts. The relevant options for the command are:
 
+# Multi-mapping reads
+
+  -M                  Multi-mapping reads will also be counted. For a multi-
+                      mapping read, all its reported alignments will be 
+                      counted. The 'NH' tag in BAM/SAM input is used to detect 
+                      multi-mapping reads.
+
+# Fractional counting
+
+  --fraction          Assign fractional counts to features. This option must
+                      be used together with '-M' or '-O' or both. When '-M' is
+                      specified, each reported alignment from a multi-mapping
+                      read (identified via 'NH' tag) will carry a fractional
+                      count of 1/x, instead of 1 (one), where x is the total
+                      number of alignments reported for the same read. When '-O'
+                      is specified, each overlapping feature will receive a
+                      fractional count of 1/y, where y is the total number of
+                      features overlapping with the read. When both '-M' and
+                      '-O' are specified, each alignment will carry a fractional
+                      count of 1/(x*y).
+# Overlap between reads and features
+
+  -O                  Assign reads to all their overlapping meta-features (or 
+                      features if -f is specified).
+# Level of summarization
+
+  -f                  Perform read counting at feature level (eg. counting 
+                      reads for exons rather than genes).
 ```{zsh, eval=FALSE, engine="sh"}
 
 cd ~/Documents/RProjects/genomics/RNA-genomics/FASTQ
