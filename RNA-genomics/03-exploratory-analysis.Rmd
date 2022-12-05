@@ -18,7 +18,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 Load packages, install if necessary
 ```{r LoadPackages, results='hide', message = FALSE,include=FALSE}
 
-packages <- c("DESeq2" ,"devtools", "dplyr","edgeR",               
+packages <- c("apeglm","DESeq2" ,"devtools", "dplyr","edgeR",               
 "GenomicAlignments","GenomicFeatures","ggplot2",             
 "pheatmap","RColorBrewer","readr","Rsubread")
 
@@ -98,6 +98,7 @@ To index the reference file we need the reference genome file Saccharomyces_cere
 So we can run this first bit which sets up the names of the files:
 
 ```{r ReadingData}
+
 setwd("~/Documents/RProjects/genomics/RNA-genomics")
 fastq = list.files("FASTQ")
 g = grep("fastq.gz",fastq)
@@ -106,7 +107,11 @@ fastq.files = paste("FASTQ",fastq,sep = "/")
 fastq.files = file.path("FASTQ",fastq)
 
 # here we are just generating the names of the bamfiles
-bam = gsub("FASTQ/","BAM/",fastq.files)
+# since  we want to distinguish these from the bamfiles
+# we generated in the terminal, lets put them in a different folder
+# let's make that folder
+# 
+bam = gsub("FASTQ/","RBAM/",fastq.files)
 bam = gsub(".fastq.gz",".bam",bam)
 
 
@@ -126,23 +131,21 @@ library(Rsubread)
 Rsubread::buildindex(basename="r64/r64.index", memory = 1000,
 reference="FASTQ/r64/Saccharomyces_cerevisiae.R64-1-1.dna.toplevel.fa.gz")
 
-# since  we want to distinguish these from the bamfiles
-# we generated in the terminal, lets change their name so we remember they were generateed in R
-bam.files = gsub("ERR458","R",bam.files)
-bam.files = gsub("BAM/","BAM/RBAM/",bam.files)
 
 ```
 
 ![](figures/dge_workflow_with_qc.png)
+
 Step 2. Align the reads. We will go with the default parameters EXCEPT
 we will add the argument sortReadsByCoordinates=TRUE which will be convenient for downstream analysis. I also set nthreads to 64, which is the physical core of a CPU to help speed things up -- 64 is the maximum for my computer -- but the number of threads you use doens't seem to help the speed much.
 
 OK, let's start this and go back to our shell script. First I have to set eval = TRUE again.
 ```{r eval=FALSE}
-# report up to three best mapping locations:
+
+# report the best mapping location:
 Rsubread::align(index = "r64/r64.index", readfile1 = fastq.files,
-output_file = bam,useAnnotation=TRUE,annot.ext = "FASTQ/r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz",isGTF = TRUE,nthreads=64,sortReadsByCoordinates=TRUE, keepReadOrder=FALSE,
-unique=FALSE,nBestLocations=3)
+output_file = bam.files,useAnnotation=TRUE,annot.ext = gtf.file,isGTF = TRUE,nthreads=64,sortReadsByCoordinates=TRUE, 
+unique=FALSE,nBestLocations = 1)
 ```
 
 Step 3. Count the reads. Once we have our reads aligned to the genome, the next step is to count how many reads have mapped to each gene as a measure of gene expression. There are many tools that can use BAM files as input and output the number of reads (counts) associated with each feature of interest (genes, exons, transcripts, etc.). Two commonly used counting tools are featureCounts and summarize overlaps.Counting reads is not a straight forward task and there are many factors that bias the final count tally.
@@ -189,9 +192,9 @@ typing featureCounts -h. So even though the Conda package subread and the R pack
 
 library(Rsubread)
 
-fc <- featureCounts(bam, annot.ext=gtf.file, 
+fc <- featureCounts(bam.files, annot.ext=gtf.file, 
 isGTFAnnotationFile=TRUE,
-isPaired=FALSE, fraction = TRUE,
+isPaired=FALSE, 
 ###################
 allowMultiOverlap = FALSE,countMultiMappingReads = TRUE)
 ##################
@@ -222,10 +225,6 @@ library(GenomicAlignments)
 se <- summarizeOverlaps(exons.by.gene, bam.list, mode=Union,
        inter.feature=TRUE, singleEnd=TRUE,ignore.strand = TRUE)
 
-mse = assays(se)$counts
-g=grep("^Y" ,rownames(mse))
-mse = mse[g,]
-mse = mse[order(rownames(mse)),]
 ```
 
 Now let's plot the two against each other to see how they compare.
@@ -240,12 +239,14 @@ abline(a=0,b=1)
 
 table(assay(se)==fc$counts[m,])
 
+cor.test(assay(se),fc$counts[m,])
 
 counts = fc$counts 
 
 g = grep("^Y",rownames(counts))
 counts = counts[g,]
 counts = counts[order(rownames(counts)),]
+# Let's give the original names back to the samples
 
 # From the script subreadMapping.sh
 cnts = read_tsv("counts.txt",skip = 1)
@@ -257,10 +258,14 @@ cts = cts[order(rownames(cts)),]
 
 colnames(cts)=basename(colnames(cts))
 
-table(all.equal(counts,cts))
+table(counts == cts)
+
+cor.test(counts,cts)
 ```
 
-A word about summarized experiments. The way summarized experiments are set up is that the rownames of the colData or metadata, also sometimes called phenoData, must match the colnames of the assay data -- the count data or expression data. Similarly, the rownames of the assay data must match the rowRanges of the featureData. This is all part of Bioconductor's way of standardizing structures so that they work well with each other across and within packages.
+You can see that the summarizedOverlaps is identical to the featureCounts method of counting reads. And our count matrix generated in the terminal is nearly identical to the one generated in R. The reason it is not identical is because of the parameter nBestLocations. When there are multiMapped reads greater than the number of nBestLocations, the program selects nBestLocations randomly out of those found. 
+
+se is a summarized experiment. A word about summarized experiments. The way summarized experiments are set up is that the rownames of the colData or metadata, also sometimes called phenoData, must match the colnames of the assay data -- the count data or expression data. Similarly, the rownames of the assay data must match the rowRanges of the featureData. This is all part of Bioconductor's way of standardizing structures so that they work well with each other across and within packages.
 
 <img src="figures/f1000research-4-7573-g0000.jpeg" width="600">
 
@@ -320,7 +325,7 @@ all(colnames(counts) == rownames(meta))
 
 Create the dataset and run the analysis:
 ```{r}
-counts = apply(counts,2,as.integer)
+
 dds <- DESeqDataSetFromMatrix(countData = counts, colData = meta, design = ~genome)
 
 dds$genome <- relevel(dds$genome, ref = "wt") # make wild-type the reference to which expression in treatment samples is compared to 
@@ -380,107 +385,46 @@ The null hypothesis: log fold change = 0 for across conditions. P-values are the
 contrast <- c("genome", "wt", "snf2")
 res_unshrunken <- DESeq2::results(dds, contrast=contrast)
 summary(res_unshrunken)
+
+# or
+
+res_unshrunken <- DESeq2::results(dds, name  = "genome_snf2_vs_wt")
+
 ```
 
 Here shows a summary of up- or down-regulated genes:
 
-- **Shrinkage of the log2 fold changes**
+- **Shrinkage of log fold change of genes with very low expression.**
+Genes with very low expression usually have very noisy estimates of log2 fold changes. It is desirable to shrink the fold change of genes with low read counts, but not shrink the fold change of highly expressed genes too much. DEseq2 has implemented several different algorithms for shrinkage. The DESeq2 developers recommend to use apeglm method for shrinkage. Shrinkage is especially important if you plan to use LFC to rank genes for enrichment analysis (e.g., GSEA, to be covered next week).
 
 One more step where information is used across genes to avoid overestimates of differences between genes with high dispersion. This is not done by default, so we run the code:
 ```{r}
-res <- lfcShrink(dds, contrast=contrast, res=res_unshrunken,type="normal")
+
+res <- lfcShrink(dds, coef ="genome_snf2_vs_wt", type="apeglm")
+
+# or
+
+res <- lfcShrink(dds, coef =2, type="apeglm")
+
 ```
 
 
 ## Visualizing RNA-seq results 
 
 **Count Data Transformations:** 
-To improve the distances/clustering for the PCA and heirarchical clustering visualization methods, we need to moderate the variance across the mean by applying the `rlog` or `vst` transformation to the normalized counts.
+To improve the distances/clustering for the PCA and heirarchical clustering visualization methods, we need to moderate the variance across the mean by applying the `rlog` transformation to the normalized counts.
 
-The the `rlog` or `vst` transformations of the normalized counts is only necessary for these visualization methods during this quality assessment. We will not be using these tranformed counts downstream.
+The the `rlog` transformations of the normalized counts is only necessary for these visualization methods during  quality assessment. We will not be using these tranformed counts downstream.
 
-**rlog**: "transforms the count data to the log2 scale in a way which minimizes differences between samples for rows with small counts, and which normalizes with respect to library size. The rlog transformation produces a similar variance stabilizing effect as varianceStabilizingTransformation, though rlog is more robust in the case when the size factors vary widely. The transformation is useful when checking for outliers or as input for machine learning techniques such as clustering or linear discriminant analysis." -- from function documentation 
+**rlog**: "transforms the count data to the log2 scale in a way which minimizes differences between samples for rows with small counts, and which normalizes with respect to library size. The transformation is useful for quality control.
 
 ```{r, cache=TRUE}
 rld <- rlog(dds, blind=TRUE)
 head(assay(rld), 3)
 ```
 
-**Variance stabilizing transformation (so much faster than rlog):**
-"This function calculates a variance stabilizing transformation (VST) from the fitted dispersion-mean relation(s) and then transforms the count data (normalized by division by the size factors or normalization factors), yielding a matrix of values which are now approximately homoskedastic (having constant variance along the range of mean values). The transformation also normalizes with respect to library size. The rlog is less sensitive to size factors, which can be an issue when size factors vary widely. These transformations are useful when checking for outliers or as input for machine learning techniques such as clustering or linear discriminant analysis." – from function documentation.
-
-```{r, cache = TRUE}
-vsd <- vst(dds, blind = TRUE)
-head(assay(vsd), 3)
-```
-
 ## Components of the PCA analysis - Variance explained
 The statistical interpretation of singular values is in the form of variance in the data explained by the various components. The singular values produced by the `prcomp` (a function in R that produces principal components, along with `svd`) are in order from largest to smallest and when squared are proportional the amount of variance explained by a given singular vector.
-
-To show how this works, let's try it out on our assay(rld):
-
-```{r}
-
-pca1 <- prcomp(t(assay(rld)), scale =FALSE,center = TRUE)
-
-head(pca1$x)
-
-
-```
-You can see that the first two principal components align well with our expectations from our metadata.
-
-
-```{r}
-pr.out <- prcomp(x = t(assay(rld)), scale = FALSE, center = TRUE)
-summary(pr.out)
-cols=c("dodgerblue","darkorange")
-
-plot(pr.out$x[,1],pr.out$x[,2],col=cols[as.numeric(as.factor(meta$genome))],main = "PCA",xlab="PC1",ylab="PC2",pch=19)
-
-legend("bottomright",fill=cols,legend = c("snf2","wt"),pch=15, cex = 0.75)
-
-```
-# Importance of components:
-#                           PC1    PC2    PC3    PC4
-# Standard deviation     1.3721 0.9933 0.8526 0.6354
-# Proportion of Variance 0.4707 0.2467 0.1817 0.1009
-# Cumulative Proportion  0.4707 0.7173 0.8991 1.0000
-```{r}
-# Variability of each principal component: pr.var
-pr.var <- pr.out$sdev^2
-
-# Variance explained by each principal component: pve
-pve <- pr.var / sum(pr.var)
-pve
-
-# Plot variance explained for each principal component
-plot(pve, xlab = "Principal Component",
-     ylab = "Proportion of Variance Explained",
-     ylim = c(0, 1), type = "b")
-
-
-# Variability of each principal component: pr.var
-pr.var <- pr.out$sdev^2
-
-# Variance explained by each principal component: pve
-pve <- pr.var / sum(pr.var)
-pve
-
-# Plot variance explained for each principal component
-plot(pve, xlab = "Principal Component",
-     ylab = "Proportion of Variance Explained",
-     ylim = c(0, 1), type = "b")
-
-
-# Plot cumulative proportion of variance explained
-plot(cumsum(pve), xlab = "Principal Component",
-     ylab = "Cumulative Proportion of Variance Explained",
-     ylim = c(0, 1), type = "b")
-
-```
-
-
-As we can see from the first plot, we can see that the first component explains about 80% of all the variation in the data. In other words, even though there are 6 dimensions in the data, 80% of the variation in the data can be explained by a single dimension. That suggests that the data could be simplified quite a bit.
 
 rlog PCA: 
 ```{r pca_rld}
@@ -494,22 +438,7 @@ PCA<-ggplot(data1, aes(PC1, PC2, color = genome))+ theme_bw()+
   ylab(paste0("PC2: ",percentVar1[2],"% variance")) +
   theme(text = element_text(size=20)) + ggtitle("rlog PCA")
 PCA
-#ggsave("figures/vsd_PCA.png", device="png") # to save the plot
-```
 
-variance stabilized PCA:
-```{r pca_vst}
-data1 <- plotPCA(vsd, returnData=TRUE,intgroup="genome")
-#data1$group<-gsub(" : ","_",as.character(data1$group))
-percentVar1 <- round(100 * attr(data1, "percentVar"))
-
-PCA<-ggplot(data1, aes(PC1, PC2, color = genome))+ theme_bw()+
-  geom_point(size=9, alpha = 0.8) + scale_colour_manual(values = c("#44aabb","#bbbbbb"))+
-  xlab(paste0("PC1: ",percentVar1[1],"% variance")) +
-  ylab(paste0("PC2: ",percentVar1[2],"% variance")) +
-  theme(text = element_text(size=20)) + ggtitle("vst PCA")
-PCA
-#ggsave("figures/vsd_PCA.png", device="png") # to save the plot
 ```
 
 ## HeatMaps
@@ -518,6 +447,9 @@ rlog HeatMap:
 
 To make heatmaps we need colors. The RColorBrewer package is a nice choice for this. RColorBrewer has several palettes, there are three types: "div","seq" and "qual". You can check them out typing:
 ```{r}
+
+library(RColorBrewer)
+
 for (i in 1:5) {
 
 display.brewer.all(n=NULL, type="all", select=NULL, exact.n=TRUE,colorblindFriendly=FALSE)
@@ -557,16 +489,10 @@ names(mat_colors$genome) <- c("wt", "snf2")
 genes <- order(res$padj)[1:50]
 
 pheatmap(assay(rld)[genes, ], cluster_rows=TRUE, show_rownames=FALSE,
-         cluster_cols=TRUE, annotation_col=df, annotation_colors = c(mat_colors1, mat_colors), fontsize = 12)
-```
-
-variance stabilized HeatMap: 
-```{r heatmap_vst}
-df <- as.data.frame(colData(vsd)[,c("genome", "sample")])
-
-pheatmap(assay(vsd)[genes, ], cluster_rows=TRUE, show_rownames=FALSE, show_colnames = FALSE,
          cluster_cols=FALSE, annotation_col=df, annotation_colors = c(mat_colors1, mat_colors), fontsize = 12)
 ```
+
+
 
 Another option for heat maps: 
 plot the difference from the mean normalized count across samples 
@@ -593,23 +519,11 @@ pheatmap(mat,  cluster_rows=TRUE, show_rownames=FALSE,
 
 ```
 
-Same but with variance stabilizing function:
-```{r heatmap_vst_meandiff}
-mat <- assay(vsd)[genes, ]
-mat <- mat - rowMeans(mat)
-
-df <- as.data.frame(colData(vsd)[,c("genome", "sample")])
-
-pheatmap(mat,  cluster_rows=TRUE, show_rownames=FALSE, show_colnames = FALSE,
-         cluster_cols=FALSE, annotation_col=df, annotation_colors = c(mat_colors1, mat_colors), fontsize = 12, color = pal)
-
-```
-
 Heatmap of sample-to-sample distances
 ```{r heatmap_sampledistance}
-sampleDists <- dist(t(assay(vsd)))
+sampleDists <- dist(t(assay(rld)))
 sampleDistMatrix <- as.matrix(sampleDists)
-rownames(sampleDistMatrix) <- paste(vsd$genome, vsd$type, sep="-")
+rownames(sampleDistMatrix) <- paste(rld$genome, rld$type, sep="-")
 colnames(sampleDistMatrix) <- NULL
 colors <- colorRampPalette( rev(brewer.pal(9, "Blues")) )(255)
 pheatmap(sampleDistMatrix,
@@ -641,7 +555,7 @@ Now you have your analyzed result saved in txt file, which can be imported to Ex
 If you want to take a break and exit R, type `q()`. The workspace will be automatically saved with the extension of `.Rproj`.
 
 ## Review DeSeq2 workflow
-These comprise the full workflow
+These comprise the full workflow:
 ```{r eval=FALSE}
 # Setup DESeq2
 dds <- DESeqDataSetFromMatrix(countData = counts, colData = meta, design = ~genome)
@@ -652,7 +566,7 @@ contrast <- c("genome", "snf2", "wt")
 # Output results to table
 res_unshrunken <- results(dds, contrast=contrast)
 # Shrink log fold changes for genes with high dispersion
-res <- lfcShrink(dds, contrast=contrast, res=res_unshrunken)
+res <- lfcShrink(dds, contrast=contrast, res=res_unshrunken, type = "apeglm")
 
 ```
 
@@ -681,60 +595,6 @@ par(pch=19)
 plotCounts(dds, gene="YOR290C", intgroup="genome")
 ```
 
-
-**Exercise**
-Create a PCA plot from the DESeq2 object, using the vsd transformation and 500 of the most variable genes (default for plotPCA).
-```{r}
-
-
-
-```
-
-The vst(dds, blind=FALSE) part performs a variance stabilizing transformation of the normalized counts, to prevent a handful genes with the highest expression levels and most variance from dominating the PCA plot.
-
-**Exercise**
-Create another PCA plot, this time using the 100 most variable genes (ntop=100), instead of the default of 500.
-```{r}
-
-```
-
-**Exercise**
-Perform the DESeq analysis on the dds dataset and get the results
-```{r}
-
-
-```
-
-
-Get information on what the columns of the results contain:
-
-
-Make a dataframe with ORF and GENE as columns and arrange the data in order of padj and descending order by absolute value of log2FoldChange. Filter the results for those records that have padj < 0.05 and absolute value of res$log2FoldChange > 2 (i.e., at least double or half the level of expression).
-```{r}
-# To make a data.frame type:
-# 
-dres = data.frame(res,stringsAsFactors = F,orf = rownames(res))
-m = match(dres$orf,names(gene))
-# check to see that all orfs were found in the names of gene
-table(is.na(m)) # is Not Available (missing)
-dres$gene = gene[m]
-
-
-dres = dres %>% arrange(padj,  desc(abs(log2FoldChange)))
-
-```
-
-**Shrinkage of log fold change of genes with very low expression.**
-Genes with very low expression usually have very noisy estimates of log2 fold changes. It is desirable to shrink the fold change of genes with low read counts, but not shrink the fold change of highly expressed genes too much. DEseq2 has implemented several different algorithms for shrinkage. The DESeq2 developers recommend to use apeglm method for shrinkage. Shrinkage is especially important if you plan to use LFC to rank genes for enrichment analysis (e.g., GSEA, to be covered next week).
-
-Perform the shrinkage with "apeglm", then compare the MA plot
-with or without shrinkage. Make the same data.frame as the one above
-and compare the results.
-```{r}
-
-
-```
-
 IGV
 
 The Integrative Genomics Viewer (IGV) is a high-performance, easy-to-use, interactive tool for the visual exploration of genomic data. It supports flexible integration of all the common types of genomic data and metadata, investigator-generated or publicly available, loaded from local or cloud sources.
@@ -761,7 +621,6 @@ Question: pick five of your top hits in the DESeq2 analysis and see if they chec
 
 
 
-Question: look up a gene with an intron. How do the reads compare to genes without introns?
 
 
 

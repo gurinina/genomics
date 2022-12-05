@@ -362,7 +362,7 @@ so that it is ignored but the rest of the script will run. MultiQC will be able 
 
 **Files for shell-genomics**
 
-Setup: Download files required for the lesson(https://figshare.com/articles/dataset/Data_Carpentry_Genomics_beta_2_0/7726454)
+Setup: Download files required for the lesson (https://figshare.com/articles/dataset/Data_Carpentry_Genomics_beta_2_0/7726454)
 
 Download the file called: shell_data.tar.gz and extract it into a directory call shell_data in your home folder (/Users/your username)
 
