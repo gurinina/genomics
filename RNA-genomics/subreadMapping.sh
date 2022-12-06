@@ -22,16 +22,16 @@ subread-buildindex -o r64/r64bread.index r64/Saccharomyces_cerevisiae.R64-1-1.dn
 # note that we're also including the '&>' at the end of each line
 # this takes the information that would've been printed to our terminal, and outputs this in a log file that is saved in /data/course_data
 
-# aligning: -B report up to three best mapping locations
-subread-align --multiMapping --sortReadsByCoordinates -a r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -B 3 -T 16 -i r64/r64bread.index -t 0 -r ERR458493.fastq.gz -o ../BAM/ERR458493.bam &> ../BAM/R493.log
-subread-align --multiMapping --sortReadsByCoordinates -a r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -B 3 -T 16 -i r64/r64bread.index -t 0 -r ERR458494.fastq.gz -o ../BAM/ERR458494.bam &> ../BAM/R494.log
-subread-align --multiMapping --sortReadsByCoordinates -a r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -B 3 -T 16 -i r64/r64bread.index -t 0 -r ERR458495.fastq.gz -o ../BAM/ERR458495.bam &> ../BAM/R495.log
-subread-align --multiMapping --sortReadsByCoordinates -a r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -B 3 -T 16 -i r64/r64bread.index -t 0 -r ERR458500.fastq.gz -o ../BAM/ERR458500.bam &> ../BAM/R500.log
-subread-align --multiMapping --sortReadsByCoordinates -a r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -B 3 -T 16 -i r64/r64bread.index -t 0 -r ERR458501.fastq.gz -o ../BAM/ERR458501.bam &> ../BAM/R501.log
-subread-align --multiMapping --sortReadsByCoordinates -a r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -B 3 -T 16 -i r64/r64bread.index -t 0 -r ERR458502.fastq.gz -o ../BAM/ERR458502.bam &> ../BAM/R502.log
+# aligning: -B report the best mapping location
+subread-align --multiMapping --sortReadsByCoordinates -a r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -B 1 -T 16 -i r64/r64bread.index -t 0 -r ERR458493.fastq.gz -o ../BAM/ERR458493.bam &> ../BAM/R493.log
+subread-align --multiMapping --sortReadsByCoordinates -a r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -B 1 -T 16 -i r64/r64bread.index -t 0 -r ERR458494.fastq.gz -o ../BAM/ERR458494.bam &> ../BAM/R494.log
+subread-align --multiMapping --sortReadsByCoordinates -a r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -B 1 -T 16 -i r64/r64bread.index -t 0 -r ERR458495.fastq.gz -o ../BAM/ERR458495.bam &> ../BAM/R495.log
+subread-align --multiMapping --sortReadsByCoordinates -a r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -B 1 -T 16 -i r64/r64bread.index -t 0 -r ERR458500.fastq.gz -o ../BAM/ERR458500.bam &> ../BAM/R500.log
+subread-align --multiMapping --sortReadsByCoordinates -a r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -B 1 -T 16 -i r64/r64bread.index -t 0 -r ERR458501.fastq.gz -o ../BAM/ERR458501.bam &> ../BAM/R501.log
+subread-align --multiMapping --sortReadsByCoordinates -a r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -B 1 -T 16 -i r64/r64bread.index -t 0 -r ERR458502.fastq.gz -o ../BAM/ERR458502.bam &> ../BAM/R502.log
+
 # then get the reads using featureCounts
-#featureCounts -t 'exon' -g 'gene_id' -a r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -o ../counts.txt ../BAM/*.bam
-featureCounts -a r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -M --fraction -o ../counts.txt ../BAM/*.bam
+featureCounts -a r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz -M -o ../counts.txt ../BAM/*.bam
 # Multi-mapping reads
 
   # -M Multi-mapping reads will also be counted. For a multi-

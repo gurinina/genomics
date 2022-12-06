@@ -193,7 +193,7 @@ Most aligners need to create their own indexes, so here we will use the subread-
                       1: genomic DNA-seq data.
     
 ## Optional arguments:
-# input reads and output
+input reads and output
     
   -o <string>       Name of an output file. By default, the output is in BAM
                     format. Omitting this option makes the output be written to
@@ -208,12 +208,12 @@ Most aligners need to create their own indexes, so here we will use the subread-
 
   --SAMoutput       Save mapping results in SAM format.
 
-# Phred offset
+## Phred offset
 
   -P <3:6>          Offset value added to the Phred quality score of each read
                     base. '3' for phred+33 and '6' for phred+64. '3' by default.
 
-# thresholds for mapping
+## thresholds for mapping
 
   -n <int>          Number of selected subreads, 10 by default.
 
@@ -230,7 +230,7 @@ Most aligners need to create their own indexes, so here we will use the subread-
                     alignment. 3 by default. Mis-matched bases found in soft-
                     clipped bases are not counted.
 
-# unique mapping and multi-mapping
+## unique mapping and multi-mapping
 
   --multiMapping    Report multi-mapping reads in addition to uniquely mapped
                     reads. Use "-B" to set the maximum number of equally-best
@@ -240,7 +240,7 @@ Most aligners need to create their own indexes, so here we will use the subread-
                     a multi-mapping read. Equally-best alignments have the same
                     number of mis-matched bases. 1 by default.
 
-# indel detection
+## indel detection
 
   -I <int>          Maximum length (in bp) of indels that can be detected. 5 by
                     default. Indels of up to 200bp long can be detected.
@@ -248,7 +248,7 @@ Most aligners need to create their own indexes, so here we will use the subread-
   --complexIndels   Detect multiple short indels that are in close proximity
                     (they can be as close as 1bp apart from each other).
 
-# read trimming
+## read trimming
 
   --trim5 <int>     Trim off <int> number of bases from 5' end of each read. 0
                     by default.
@@ -256,7 +256,7 @@ Most aligners need to create their own indexes, so here we will use the subread-
   --trim3 <int>     Trim off <int> number of bases from 3' end of each read. 0
                     by default.
 
-# distance and orientation of paired end reads
+## distance and orientation of paired end reads
 
   -d <int>          Minimum fragment/insert length, 50bp by default.
 
@@ -265,17 +265,17 @@ Most aligners need to create their own indexes, so here we will use the subread-
   -S <ff:fr:rf>     Orientation of first and second reads, 'fr' by default (
                     forward/reverse).
 
-# number of CPU threads
+## number of CPU threads
 
   -T <int>          Number of CPU threads used, 1 by default.
 
-# read group
+## read group
 
   --rg-id <string>  Add read group ID to the output.
 
   --rg <string>     Add <tag:value> to the read group (RG) header in the output.
 
-# read order
+## read order
 
   --keepReadOrder   Keep order of reads in BAM output the same as that in the
                     input file. Reads from the same pair are always placed next
@@ -286,13 +286,13 @@ Most aligners need to create their own indexes, so here we will use the subread-
                     generated for each BAM file so the BAM files can be directly
                     loaded into a genome browser.
 
-# color space reads
+## color space reads
 
   -b                Convert color-space read bases to base-space read bases in
                     the mapping output. Note that read mapping is performed at
                     color-space.
 
-# dynamic programming
+## dynamic programming
 
   --DPGapOpen <int> Penalty for gap opening in short indel detection. -1 by
                     default.
@@ -306,13 +306,13 @@ Most aligners need to create their own indexes, so here we will use the subread-
   --DPMatch <int>   Score for matched bases in short indel detection. 2 by
                     default.
 
-# detect structural variants
+## detect structural variants
 
   --sv              Detect structural variants (eg. long indel, inversion,
                     duplication and translocation) and report breakpoints. Refer
                     to Users Guide for breakpoint reporting.
 
-# gene annotation
+## gene annotation
 
   -a                Name of an annotation file (gzipped file is accepted).
                     GTF/GFF format by default. See -F option for more format
@@ -339,7 +339,7 @@ Most aligners need to create their own indexes, so here we will use the subread-
                     by default. Meta-features used for read counting will be 
                     extracted from annotation using the provided value.
 
-# others
+## others
 
   -v                Output version of the program.
   
@@ -348,7 +348,7 @@ align(
     # index for reference sequences
     index,
     
-    # input reads and output
+    *input reads and output*
     readfile1,
     readfile2 = NULL,
     type = "rna",
@@ -356,56 +356,56 @@ align(
     output_format = "BAM",
     output_file = paste(readfile1,"subread",output_format,sep="."),
     
-    # offset value added to Phred quality scores of read bases
+    *offset value added to Phred quality scores of read bases
     phredOffset = 33,
     
-    # thresholds for mapping
+    *thresholds for mapping
     nsubreads = 10,
     TH1 = 3,
     TH2 = 1,
     maxMismatches = 3,
     
-    # unique mapping and multi-mapping
+    *unique mapping and multi-mapping
     unique = FALSE,
     nBestLocations = 1,
     
-    # indel detection
+    *indel detection
     indels = 5,
     complexIndels = FALSE,
     
-    # read trimming
+    *read trimming
     nTrim5 = 0,
     nTrim3 = 0,
     
-    # distance and orientation of paired end reads
+    *distance and orientation of paired end reads
     minFragLength = 50,
     maxFragLength = 600,
     PE_orientation = "fr",
     
-    # number of CPU threads
+    *number of CPU threads
     nthreads = 1,
     
-    # read group
+    *read group
     readGroupID = NULL,
     readGroup = NULL,
     
-    # read order
+    *read order
     keepReadOrder = FALSE,
     sortReadsByCoordinates = FALSE,
     
-    # color space reads
+    *color space reads
     color2base = FALSE,
     
-    # dynamic programming
+    *dynamic programming
     DP_GapOpenPenalty = -1,
     DP_GapExtPenalty = 0,
     DP_MismatchPenalty = 0,
     DP_MatchScore = 2,
     
-    # detect structural variants
+    *detect structural variants
     detectSV = FALSE,
     
-    # gene annotation
+    *gene annotation
     useAnnotation = FALSE,
     annot.inbuilt = "mm39",
     annot.ext = NULL,
@@ -455,7 +455,7 @@ Usage:
                       1: genomic DNA-seq data.
     
 ## Optional arguments:
-## input reads and output
+input reads and output
     
   -o <string>       Name of an output file. By default, the output is in BAM
                     format. Omitting this option makes the output be written to
@@ -629,14 +629,14 @@ r64/Saccharomyces_cerevisiae.R64-1-1.96.gtf.gz\
 
 Finally, to create the count matrix we use featureCounts. The relevant options for the command are:
 
-# Multi-mapping reads
+## Multi-mapping reads
 
   -M                  Multi-mapping reads will also be counted. For a multi-
                       mapping read, all its reported alignments will be 
                       counted. The 'NH' tag in BAM/SAM input is used to detect 
                       multi-mapping reads.
 
-# Fractional counting
+## Fractional counting
 
   --fraction          Assign fractional counts to features. This option must
                       be used together with '-M' or '-O' or both. When '-M' is
@@ -649,11 +649,11 @@ Finally, to create the count matrix we use featureCounts. The relevant options f
                       features overlapping with the read. When both '-M' and
                       '-O' are specified, each alignment will carry a fractional
                       count of 1/(x*y).
-# Overlap between reads and features
+## Overlap between reads and features
 
   -O                  Assign reads to all their overlapping meta-features (or 
                       features if -f is specified).
-# Level of summarization
+## Level of summarization
 
   -f                  Perform read counting at feature level (eg. counting 
                       reads for exons rather than genes).
