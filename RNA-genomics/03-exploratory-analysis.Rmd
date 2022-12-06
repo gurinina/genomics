@@ -463,7 +463,7 @@ animals_plot +
     geom_point()
 ```
 
-```{r, eval = FALSE, purl = TRUE, echo = FALSE, purl = FALSE}
+```{r}
 ## Create a ggplot and draw it.
 animals_plot <- ggplot(data = animals,
                        aes(x = weight, y = hindfoot_length))
@@ -475,7 +475,7 @@ animals_plot +
 Add color:
 ```{r}
 animals_plot <- ggplot(data = animals,
-                       mapping = aes(x = weight, y = hindfoot_length, col = animals))
+                       mapping = aes(x = weight, y = hindfoot_length, col = species_id))
 
 animals_plot +
   geom_point()
@@ -516,15 +516,8 @@ Adding layer after layer...
 ## Visualizing RNA-seq results 
 
 **Count Data Transformations:** 
-<<<<<<< HEAD
-To improve the distances/clustering for the PCA and heirarchical clustering visualization methods, we need to moderate the variance across the mean by applying the `rlog` transformation to the normalized counts.
-
-The the `rlog` transformations of the normalized counts is only necessary for these visualization methods during  quality assessment. We will not be using these tranformed counts downstream.
-
-=======
 To improve the distances/clustering for the PCA and heirarchical clustering visualization methods, we use the `rlog` transformations of the normalized counts. Using rlog transformation is only necessary visualization methods during  quality assessment. We will not be using these tranformed counts downstream.
 
->>>>>>> bfcd84f (exploratory)
 **rlog**: "transforms the count data to the log2 scale in a way which minimizes differences between samples for rows with small counts, and which normalizes with respect to library size. The transformation is useful for quality control.
 
 ```{r, cache=TRUE}
@@ -532,11 +525,6 @@ rld <- rlog(dds, blind=TRUE)
 head(assay(rld), 3)
 ```
 
-<<<<<<< HEAD
-## Components of the PCA analysis - Variance explained
-The statistical interpretation of singular values is in the form of variance in the data explained by the various components. The singular values produced by the `prcomp` (a function in R that produces principal components, along with `svd`) are in order from largest to smallest and when squared are proportional the amount of variance explained by a given singular vector.
-
-=======
 
 ## PCA analysis - Variance explained
 Principal component analysis (PCA) can be used to visualize variation between expression analysis samples. This method is especially useful for quality control, for example in identifying problems with your experimental design, mislabeled samples, or other problems.
@@ -544,7 +532,6 @@ Principal component analysis (PCA) can be used to visualize variation between ex
 When you perform a PCA, the normalized diﬀerences in expression patterns are used to compute a distance matrix. The X- and Y-axes in a PCA plot correspond to a mathematical transformation of these distances so that data can be displayed in two dimensions. PCA is typically used primarily as a quality control or exploratory tool. In general, if your samples were produced under two experimental conditions (e.g. treated vs. untreated), the PCA plot should normally show that a) samples subjected to the same condition cluster together, and b) the clusters should be reasonably well-separated along the X-axis (“PC1”: the ﬁrst principal component).
 
 
->>>>>>> bfcd84f (exploratory)
 rlog PCA: 
 ```{r pca_rld}
 
@@ -610,18 +597,12 @@ names(mat_colors$genome) <- c("wt", "snf2")
 
 genes <- order(res$padj)[1:20]
 
-<<<<<<< HEAD
-pheatmap(assay(rld)[genes, ], cluster_rows=TRUE, show_rownames=FALSE,
-         cluster_cols=FALSE, annotation_col=df, annotation_colors = c(mat_colors1, mat_colors), fontsize = 12)
-```
-
-
-
-=======
 p=pheatmap(assay(rld)[genes, ], cluster_rows= TRUE, show_rownames=FALSE,
          cluster_cols=TRUE, annotation_col=df, annotation_colors = c(mat_colors1, mat_colors), fontsize = 12)
 ```
 
+
+Significant results by log2FoldChange and padj:
 ```{r}
 des = data.frame(res,stringsAsFactors = F)
 des$orf=rownames(des)
@@ -629,21 +610,18 @@ des = des%>% arrange(padj,desc(abs(log2FoldChange)))
 w=which(des$padj<0.05&abs(des$log2FoldChange)>2)
 genes = which(rownames(rld)%in%des$orf[w])
 
-pheatmap(assay(rld)[genes, ], cluster_rows=TRUE, show_rownames=FALSE,scale = "row",
+pheatmap(assay(rld)[genes, ], cluster_rows=TRUE, show_rownames=FALSE,#scale = "row",
          cluster_cols=TRUE, annotation_col=df, annotation_colors = c(mat_colors1, mat_colors), fontsize = 12)
 
 ```
 
 
->>>>>>> bfcd84f (exploratory)
 Another option for heat maps: 
-plot the difference from the mean normalized count across samples 
-(and optionally change default colors)
+plot the difference from the mean normalized count across samples:
 
-With Rlog transformed data:
-```{r heatmap_rld_meandiff}
+With normalized count data:
+```{r heatmap_norm_meandiff}
 
-pal <- brewer.pal(9,"YlOrRd")
 
 mat_colors1<-list(sample = brewer.pal(6 ,"Set2"))
 names(mat_colors1$sample)<- df$sample
@@ -651,13 +629,18 @@ names(mat_colors1$sample)<- df$sample
 mat_colors <- list(genome = brewer.pal(2,"Set3")[1:2])
 names(mat_colors$genome) <- c("wt", "snf2")
 
-mat <- assay(rld)[genes, ]
+
+norm = counts(dds, normalized = TRUE)
+w=which(des$padj<0.05&abs(des$log2FoldChange)>2)
+genes = which(rownames(norm)%in%des$orf[w])
+
+mat <- norm[genes, ]
 mat <- mat - rowMeans(mat)
 
 df <- as.data.frame(colData(rld)[,c("genome", "sample")])
 
 pheatmap(mat,  cluster_rows=TRUE, show_rownames=FALSE,
-         cluster_cols=TRUE, annotation_col=df, annotation_colors = c(mat_colors1, mat_colors), fontsize = 12, color = pal)
+         cluster_cols=TRUE, annotation_col=df,scale = "row", annotation_colors = c(mat_colors1, mat_colors), fontsize = 12, )
 
 ```
 
@@ -677,16 +660,42 @@ pheatmap(sampleDistMatrix,
 The summary of results after shrinkage can be viewed by typing `summary(res)` or `head(res)`. If you used `head(res)` you will be viewing the top few lines of the result containing log2 fold change and p-value. log2FoldChange = log2(snf2count/wtcount) Estimated from the model. padj - Adjusted pvalue for the probability that the log2FoldChange is not zero.
 
 
+## Plotting single genes
+Finally, you can explore individual genes that you might be interested in. A simple plot can be made to compare the expression level of a particular gene. For example, let's take two genes from the results table, one with a big fold change and one with a small fold change.
+
+
+```{r}
+w = which(abs(res$log2FoldChange)<0.2&res$padj<0.05)
+which.min(res$padj[w])
+rownames(res)[w][12]
+res[w[12],]
+which.min(res$baseMean[w])
+par(pch=19)
+colgenome = c(rep("dodgerblue",3),rep("black",3))
+par(mfrow = c(1,2))
+plotCounts(dds, gene="YLR109W", intgroup="genome",col = colgenome)
+
+
+plotCounts(dds, gene="YAR060C", intgroup="genome",col = colgenome)
+```
+
 ## Saving results
 Now you have the table with log2 fold change and you might want to save it for future analysis. A adj value cutoff can be applied here. For example, here p-adj 0.05 is used.
 
 ```{r}
 ## Filtering to find significant genes
 padj.cutoff <- 0.05 # False Discovery Rate cutoff
-significant_results <- res[which(res$padj < padj.cutoff),]
+significant_results <- res[which(res$padj < padj.cutoff &
+abs(res_unshrunken$log2FoldChange)>2),]
 
+significant_unshrunked <- res_unshrunken[which(res_unshrunken$padj < padj.cutoff &
+abs(res_unshrunken$log2FoldChange)>2),]
+
+sdf = setdiff(rownames(significant_unshrunked),rownames(significant_results))
+
+length(sdf)
 ## save results using customized file_name
-file_name = 'significant_padj_0.05.txt'
+file_name = 'significant_padj_0.05_foldChange_2.txt'
 # write.table(significant_results, file_name, quote=FALSE)
 ```
 
@@ -708,7 +717,7 @@ contrast <- c("genome", "snf2", "wt")
 # Output results to table
 res_unshrunken <- results(dds, contrast=contrast)
 # Shrink log fold changes for genes with high dispersion
-res <- lfcShrink(dds, contrast=contrast, res=res_unshrunken, type = "apeglm")
+res <- lfcShrink(dds, coef="genome_snf2_vs_wt", res=res_unshrunken, type = "apeglm")
 
 ```
 
@@ -729,13 +738,6 @@ Summarize results
 summary(res, alpha = 0.05) # default significance cut-off is 0.1, changing alpha to 0.05 changes the significance cut-off 
 ```
 
-
-## Plotting single genes
-Now, you can explore individual genes that you might be interested in. A simple plot can be made to compare the expression level of a particular gene. For example, for gene "YOR290C":
-```{r}
-par(pch=19)
-plotCounts(dds, gene="YOR290C", intgroup="genome")
-```
 
 IGV
 
