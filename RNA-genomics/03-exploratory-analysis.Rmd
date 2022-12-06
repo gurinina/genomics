@@ -289,6 +289,22 @@ genecnts = counts
 rownames(genecnts)=gene[m]
 ```
 
+## Interlude: data.frames
+
+```{r}
+
+data("mpg")
+dplyr::glimpse(mpg)
+names(mpg)
+mpg %>% dplyr::select(hwy) %>% head()
+mpg %>% filter(manufacturer == "dodge") %>% dplyr::select(manufacturer,model) %>% head()
+mpg %>% arrange(model) %>% dplyr::select(manufacturer,model) %>% head()
+mpg %>% filter(cty >30)%>% dplyr::select(manufacturer,model) %>% head()
+mpg %>% mutate(hwy_vs_cty = hwy/cty) %>% dplyr::select(hwy_vs_cty) %>% head()
+```
+
+
+
 
 Let's rename our colnames of counts from bamfile names back to our original sample names before we start our differential analysis:
 ```{r rename}
@@ -301,7 +317,12 @@ names(meta)[2] = "genome"
 meta$genome = factor(meta$genome)
 meta$genome = relevel(meta$genome,ref = "wt")
 # make wild-type the reference to which expression in snf2 samples is compared to
+
+
 meta = meta %>% dplyr::arrange(sample)
+
+#### PIPE OPERATOR ####
+
 meta$sample
 meta = data.frame(meta,stringsAsFactors = F)
 rownames(meta)=meta$sample
