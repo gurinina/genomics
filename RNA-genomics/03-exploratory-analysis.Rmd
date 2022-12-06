@@ -374,7 +374,7 @@ Here we use the built in function plotPCA from DESeq2 (built on top of ggplot). 
 
 ```{r, fig.width = 5, fig.height = 15}
 rld <- rlog(dds, blind=TRUE)
-plotPCA(rld, intgroup="genome") + geom_text(aes(label=name))
+
 ```
 
 
@@ -408,14 +408,123 @@ res <- lfcShrink(dds, coef =2, type="apeglm")
 
 ```
 
+## Visualizing RNA-seq results 
+
+Brief interlude: introduction to ggplot:
+
+ggplot is an plotting method in R with the following arguments:
+
+ggplot(data = <DATA>, mapping = aes(<MAPPINGS>)) +  <GEOM_FUNCTION>()
+
+
+```{r}
+animals <- read_csv("data/surveys_complete.csv")
+glimpse(animals)
+names(animals)
+```
+
+
+use the `ggplot()` function and bind the plot to a specific data frame using the `data` argument
+```{r eval = FALSE}
+ggplot(data = animals)
+```
+
+- define an aesthetic mapping (using the aesthetic (`aes`) function), by
+selecting the variables to be plotted and specifying how to present them in the
+graph, e.g., as x/y positions or characteristics such as size, shape, color, etc.
+```{r, eval = FALSE}
+ggplot(data = animals, mapping = aes(x = weight, y = hindfoot_length))
+```
+
+
+finally add 'geoms' – graphical representations of the data in the plot (points,
+  lines, bars). **`ggplot2`** offers many different geoms; we will use some
+  common ones today, including:
+
+  * `geom_point()` for scatter plots, dot plots, etc.
+  * `geom_boxplot()` for, well, boxplots!
+  * `geom_line()` for trend lines, time series, etc.  
+
+To add a geom to the plot use `+` operator. Because we have two continuous
+variables, let's use `geom_point()` first:
+```{r first-ggplot}
+ggplot(data = animals, mapping = aes(x = weight, y =      hindfoot_length)) + geom_point()
+```
+
+The `+` in the **`ggplot2`** package is particularly useful because it allows you to modify existing `ggplot` objects. This means you can easily set up plot "templates" and conveniently explore different types of plots, so the above
+plot can also be generated with code like this:
+```{r, first-ggplot-with-plus}
+# Assign plot to a variable
+animals_plot <- ggplot(data = animals,
+                       mapping = aes(x = weight, y = hindfoot_length))
+
+# Draw the plot
+animals_plot +
+    geom_point()
+```
+
+```{r, eval = FALSE, purl = TRUE, echo = FALSE, purl = FALSE}
+## Create a ggplot and draw it.
+animals_plot <- ggplot(data = animals,
+                       aes(x = weight, y = hindfoot_length))
+
+animals_plot +
+  geom_point()
+```
+
+Add color:
+```{r}
+animals_plot <- ggplot(data = animals,
+                       mapping = aes(x = weight, y = hindfoot_length, col = animals))
+
+animals_plot +
+  geom_point()
+
+```
+
+```{r}
+## Create a ggplot and draw it.
+animals_plot <- ggplot(data = animals,
+                       aes(x = weight, y = hindfoot_length))
+
+animals_plot +
+  geom_point(alpha = 0.1, aes(color = species_id))
+```
+
+Different geometry:
+```{r}
+animals_plot <- ggplot(data = animals,
+                       aes(x = species_id, y = weight, col = species_id))
+
+animals_plot +
+  geom_point()
+```
+Same plot, different geometry
+```{r}
+animals_plot +
+  geom_boxplot()
+```
+Same plot, jitter, log10 y-axis
+```{r}
+animals_plot +
+  scale_y_log10()+
+  geom_boxplot() +
+  geom_jitter(alpha = 0.3,size=1)
+```
+Adding layer after layer...
 
 ## Visualizing RNA-seq results 
 
 **Count Data Transformations:** 
+<<<<<<< HEAD
 To improve the distances/clustering for the PCA and heirarchical clustering visualization methods, we need to moderate the variance across the mean by applying the `rlog` transformation to the normalized counts.
 
 The the `rlog` transformations of the normalized counts is only necessary for these visualization methods during  quality assessment. We will not be using these tranformed counts downstream.
 
+=======
+To improve the distances/clustering for the PCA and heirarchical clustering visualization methods, we use the `rlog` transformations of the normalized counts. Using rlog transformation is only necessary visualization methods during  quality assessment. We will not be using these tranformed counts downstream.
+
+>>>>>>> bfcd84f (exploratory)
 **rlog**: "transforms the count data to the log2 scale in a way which minimizes differences between samples for rows with small counts, and which normalizes with respect to library size. The transformation is useful for quality control.
 
 ```{r, cache=TRUE}
@@ -423,11 +532,23 @@ rld <- rlog(dds, blind=TRUE)
 head(assay(rld), 3)
 ```
 
+<<<<<<< HEAD
 ## Components of the PCA analysis - Variance explained
 The statistical interpretation of singular values is in the form of variance in the data explained by the various components. The singular values produced by the `prcomp` (a function in R that produces principal components, along with `svd`) are in order from largest to smallest and when squared are proportional the amount of variance explained by a given singular vector.
 
+=======
+
+## PCA analysis - Variance explained
+Principal component analysis (PCA) can be used to visualize variation between expression analysis samples. This method is especially useful for quality control, for example in identifying problems with your experimental design, mislabeled samples, or other problems.
+
+When you perform a PCA, the normalized diﬀerences in expression patterns are used to compute a distance matrix. The X- and Y-axes in a PCA plot correspond to a mathematical transformation of these distances so that data can be displayed in two dimensions. PCA is typically used primarily as a quality control or exploratory tool. In general, if your samples were produced under two experimental conditions (e.g. treated vs. untreated), the PCA plot should normally show that a) samples subjected to the same condition cluster together, and b) the clusters should be reasonably well-separated along the X-axis (“PC1”: the ﬁrst principal component).
+
+
+>>>>>>> bfcd84f (exploratory)
 rlog PCA: 
 ```{r pca_rld}
+
+plotPCA(rld, returnData=TRUE, intgroup = "genome")
 data1 <- plotPCA(rld, returnData=TRUE, intgroup = "genome")
 #data1$group<-gsub(" : ","_",as.character(data1$group))
 percentVar1 <- round(100 * attr(data1, "percentVar"))
@@ -475,25 +596,46 @@ To use a palette, simply type `brewer.pal` followed by the number of colors you 
 set1 = brewer.pal(8, "Set1")
 ```
 
-
+In a heatmap we are simply representing numbers by colors. We are plotting our top 500 differentially expressed genes in our results table: snf2 versus wt. This heatmap enables us to see the expression of these genes in all the samples from the count matrix.
 ```{r heatmap_rld}
 
 df <- as.data.frame(colData(rld)[,c("genome", "sample")])
 
+# lists of colors
 mat_colors1<-list(sample = brewer.pal(12, "Paired")[0:6])
 names(mat_colors1$sample)<- df$sample
 
-mat_colors <- list(genome = brewer.pal(12, "Paired")[7:8])
+mat_colors <- list(genome = brewer.pal(12, "Paired")[9:10])
 names(mat_colors$genome) <- c("wt", "snf2")
 
-genes <- order(res$padj)[1:50]
+genes <- order(res$padj)[1:20]
 
+<<<<<<< HEAD
 pheatmap(assay(rld)[genes, ], cluster_rows=TRUE, show_rownames=FALSE,
          cluster_cols=FALSE, annotation_col=df, annotation_colors = c(mat_colors1, mat_colors), fontsize = 12)
 ```
 
 
 
+=======
+p=pheatmap(assay(rld)[genes, ], cluster_rows= TRUE, show_rownames=FALSE,
+         cluster_cols=TRUE, annotation_col=df, annotation_colors = c(mat_colors1, mat_colors), fontsize = 12)
+```
+
+```{r}
+des = data.frame(res,stringsAsFactors = F)
+des$orf=rownames(des)
+des = des%>% arrange(padj,desc(abs(log2FoldChange)))
+w=which(des$padj<0.05&abs(des$log2FoldChange)>2)
+genes = which(rownames(rld)%in%des$orf[w])
+
+pheatmap(assay(rld)[genes, ], cluster_rows=TRUE, show_rownames=FALSE,scale = "row",
+         cluster_cols=TRUE, annotation_col=df, annotation_colors = c(mat_colors1, mat_colors), fontsize = 12)
+
+```
+
+
+>>>>>>> bfcd84f (exploratory)
 Another option for heat maps: 
 plot the difference from the mean normalized count across samples 
 (and optionally change default colors)
@@ -532,7 +674,7 @@ pheatmap(sampleDistMatrix,
          col=colors)
 ```
 
-The summary of results after shrinkage can be viewed by typing `summary(res)` or `head(res)`. If you used `head(res)` you will be viewing the top few lines of the result containing log2 fold change and p-value. log2FoldChange = log2(snf2count/wtcount)Estimated from the model. padj - Adjusted pvalue for the probability that the log2FoldChange is not zero.
+The summary of results after shrinkage can be viewed by typing `summary(res)` or `head(res)`. If you used `head(res)` you will be viewing the top few lines of the result containing log2 fold change and p-value. log2FoldChange = log2(snf2count/wtcount) Estimated from the model. padj - Adjusted pvalue for the probability that the log2FoldChange is not zero.
 
 
 ## Saving results
